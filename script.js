@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
         {
             title: 'Grow A Garden',
             description: 'Ett avkopplande spel där du kan odla din egen virtuella trädgård.',
-            image: 'https://via.placeholder.com/300x180.png?text=Grow+A+Garden',
+            image: 'growagarden.AVIF',
             link: '#'
         },
         {
