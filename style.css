@@ -20,22 +20,26 @@ header h1 {
 main {
     padding: 20px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    /* Justerat minmax för att bättre passa den liggande formen */
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
     gap: 20px;
 }
 
 .giveaway-card {
-    background-color: #2a2a2a; /* Denna bakgrundsfärg kommer nu att synas mindre, men behålls som fallback */
+    background-color: #2a2a2a;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     transition: transform 0.2s;
-    position: relative; /* VIKTIGT: Detta gör att barn-element med position: absolute; placeras relativt till detta kort */
-    height: 350px; /* Bestäm en fast höjd för kortet om du vill, annars anpassar det sig */
-    display: flex; /* För att centrera innehållet vertikalt om du har en fast höjd */
+    position: relative;
+    
+    /* NYCKELÄNDRING: Sätter kortets proportioner till 16:9 (liggande) */
+    aspect-ratio: 16 / 9; 
+    
+    display: flex;
     flex-direction: column;
-    justify-content: flex-end; /* Flyttar innehållet till botten */
-    padding: 20px; /* Lägg till padding för innehållet så det inte sitter ända ut i kanten */
+    justify-content: flex-end;
+    padding: 20px;
 }
 
 .giveaway-card:hover {
@@ -44,55 +48,52 @@ main {
 
 .giveaway-card img {
     width: 100%;
-    height: 100%; /* Bilden ska täcka hela kortet */
+    height: 100%;
     object-fit: cover;
-    position: absolute; /* VIKTIGT: Gör att bilden lägger sig under texten */
+    position: absolute;
     top: 0;
     left: 0;
-    z-index: 1; /* Placera bilden under text/knapp */
+    z-index: 1;
 }
 
 .giveaway-card-content {
-    position: relative; /* VIKTIGT: Gör att innehållet hamnar över bilden */
-    z-index: 2; /* Placera innehållet över bilden */
-    /* Ta bort padding härifrån då den nu sitter på .giveaway-card */
-    padding-top: 50px; /* Lägg till padding upptill om du vill ha utrymme från toppen av bilden */
-    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%); /* Tonad bakgrund längst ner */
-    padding-bottom: 0; /* Tar bort extra padding nertill */
-    margin-left: -20px; /* Kompensera för padding på .giveaway-card */
-    margin-right: -20px; /* Kompensera för padding på .giveaway-card */
-    padding-left: 20px; /* Återställ padding för texten */
-    padding-right: 20px; /* Återställ padding för texten */
-    padding-top: 80px; /* Justera denna för att kontrollera hur långt upp den tonade bakgrunden går */
-    margin-bottom: -20px; /* Kompensera för padding på .giveaway-card så den fyller hela botten */
-
+    position: relative;
+    z-index: 2;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0) 100%);
+    
+    /* Kompenserar för padding på föräldern */
+    margin: -20px; 
+    
+    /* Återställer padding för texten inuti */
+    padding: 60px 20px 20px 20px; 
 }
 
 .giveaway-card-content h2 {
     margin-top: 0;
-    margin-bottom: 5px; /* Mindre avstånd till beskrivningen */
-    font-size: 1.5em; /* Justera storlek om det behövs */
+    margin-bottom: 5px;
+    font-size: 1.5em;
+    color: #fff;
 }
 
 .giveaway-card-content p {
-    color: #e0e0e0; /* Lättare färg för bättre kontrast mot mörk bakgrund */
-    margin-bottom: 15px; /* Lite mer utrymme till knappen */
-    font-size: 0.95em; /* Justera storlek om det behövs */
+    color: #e0e0e0;
+    margin-bottom: 15px;
+    font-size: 0.95em;
 }
 
 .giveaway-card-content .btn {
     display: inline-block;
-    padding: 12px 20px; /* Större knapp för bättre klickbarhet */
+    padding: 12px 20px;
     background-color: #5c67f2;
     color: #fff;
     text-decoration: none;
     border-radius: 5px;
-    font-weight: bold; /* Fet text på knappen */
-    transition: background-color 0.2s; /* Mjuk övergång vid hover */
+    font-weight: bold;
+    transition: background-color 0.2s;
 }
 
 .giveaway-card-content .btn:hover {
-    background-color: #4a54e6; /* Ljusare färg vid hover */
+    background-color: #4a54e6;
 }
 
 footer {
