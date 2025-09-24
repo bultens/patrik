@@ -108,7 +108,7 @@ footer {
 
 /* Sätter bakgrundsbilden på den nya sidans main-element */
 .giveaway-page-main {
-    background-image: url('Background.jpg');
+    background-image: url('Background.png');
     background-repeat: repeat; /* Repeterar bakgrunden */
     min-height: 70vh; /* Säkerställer att bakgrunden syns även med lite innehåll */
 }
@@ -234,4 +234,5 @@ footer {
 
 .modal-content button:hover {
     background-color: #4a54e6;
+
 }
