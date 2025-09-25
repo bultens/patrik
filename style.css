@@ -114,6 +114,9 @@ footer {
 
     /* ÄNDRING: Justerat grid för att få plats med fler kort i bredd */
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    
+    /* NY RAD: Hindrar korten från att sträckas ut på höjden */
+    align-items: start; 
 }
 
 .item-card {
