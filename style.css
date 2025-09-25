@@ -24,7 +24,7 @@ main {
     gap: 20px;
 }
 
-/* NY: Wrapper för kortlänken för att ta bort standard-utseende på länkar */
+/* Wrapper för kortlänken för att ta bort standard-utseende på länkar */
 .giveaway-card-link {
     text-decoration: none;
     color: inherit;
@@ -104,29 +104,37 @@ footer {
 }
 
 
-/* ------ NY CSS FÖR GIVEAWAY-SIDAN ------ */
+/* ------ ÄNDRAD CSS FÖR GIVEAWAY-SIDAN ------ */
 
-/* Sätter bakgrundsbilden på den nya sidans main-element */
 .giveaway-page-main {
+    /* ÄNDRING: Korrekt filnamn för bakgrunden */
     background-image: url('Background.png');
-    background-repeat: repeat; /* Repeterar bakgrunden */
-    min-height: 70vh; /* Säkerställer att bakgrunden syns även med lite innehåll */
+    background-repeat: repeat;
+    min-height: 70vh;
+
+    /* ÄNDRING: Justerat grid för att få plats med fler kort i bredd */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
-/* Stil för item-korten (t.ex. BoneBlossom) */
 .item-card {
-    background-color: #2a2a2a;
+    /* ÄNDRING: Bakgrunden är nu transparent */
+    background-color: transparent; 
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    transition: transform 0.2s;
+    transition: transform 0.2s, border-color 0.2s;
     cursor: pointer;
     text-align: center;
     padding: 15px;
+    
+    /* ÄNDRING: Lade till en synlig ram */
+    border: 2px solid rgba(240, 240, 240, 0.4);
 }
 
 .item-card:hover {
     transform: translateY(-5px);
+    /* ÄNDRING: Ramen blir tydligare vid hover för feedback */
+    border-color: rgba(240, 240, 240, 0.9);
 }
 
 .item-card img {
@@ -138,19 +146,23 @@ footer {
 .item-card h3 {
     margin: 10px 0 5px 0;
     font-size: 1.3em;
+    /* NYTT: Text-skugga för läsbarhet mot den nya bakgrunden */
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
 }
 
 .item-card p {
     font-size: 0.9em;
     color: #ccc;
     margin: 0;
+    /* NYTT: Text-skugga för läsbarhet mot den nya bakgrunden */
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
 }
 
 
-/* ------ NY CSS FÖR MODAL-FÖNSTRET ------ */
+/* ------ CSS FÖR MODAL-FÖNSTRET (Oförändrad) ------ */
 
 .modal-overlay {
-    display: none; /* Gömmer modalen som standard */
+    display: none; 
     position: fixed; 
     z-index: 1000; 
     left: 0;
@@ -215,7 +227,7 @@ footer {
     border: 1px solid #555;
     background-color: #222;
     color: #f0f0f0;
-    box-sizing: border-box; /* Viktigt för att padding inte ska öka bredden */
+    box-sizing: border-box;
 }
 
 .modal-content button {
@@ -234,5 +246,4 @@ footer {
 
 .modal-content button:hover {
     background-color: #4a54e6;
-
 }
