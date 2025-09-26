@@ -6,12 +6,18 @@
     <title>Adminpanel</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Specifik CSS för admin-sidan för att inte klotta ner style.css */
-        .admin-container { max-width: 500px; margin: 40px auto; padding: 20px; }
+        /* Specifik CSS för admin-sidan */
+        .admin-container { max-width: 800px; margin: 40px auto; padding: 20px; }
         .hidden { display: none; }
         #admin-login-form label { display: block; margin-top: 10px; }
         #admin-login-form input { width: 100%; padding: 8px; box-sizing: border-box; }
         #admin-login-form button { width: 100%; padding: 10px; margin-top: 20px; }
+        .page-card { background-color: #2a2a2a; border-radius: 8px; padding: 20px; margin-top: 20px; }
+        .page-card label { display: block; margin-top: 15px; font-weight: bold; }
+        .page-card input[type="text"], .page-card textarea { width: 100%; padding: 8px; box-sizing: border-box; background-color: #333; color: #f0f0f0; border: 1px solid #555; border-radius: 4px; }
+        .page-card .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 15px; }
+        .page-card button { padding: 10px 15px; margin-top: 20px; background-color: #5c67f2; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .page-card button:hover { background-color: #4a54e6; }
     </style>
 </head>
 <body>
@@ -33,9 +39,19 @@
         </div>
 
         <div id="admin-view" class="hidden">
-            <h2>Välkommen, Admin!</h2>
-            <p>Här kommer du kunna hantera dina giveaways.</p>
-            <button id="logout-button">Logga ut</button>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>Välkommen, Admin!</h2>
+                <button id="logout-button">Logga ut</button>
+            </div>
+            
+            <div id="page-management">
+                <h3>Hantera Huvudsidor</h3>
+                <p>Här kan du aktivera, inaktivera och ändra innehållet för huvudsidorna som visas på startsidan.</p>
+                <div id="pages-list-container">
+                    <p id="loading-indicator">Laddar sidor från databasen...</p>
+                </div>
+            </div>
+
         </div>
     </main>
 
