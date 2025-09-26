@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-    <meta charset="UTF--8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adminpanel</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Specifik CSS för admin-sidan */
+        /* ... all of the previous CSS remains the same ... */
         .admin-container { max-width: 800px; margin: 40px auto; padding: 20px; }
         .hidden { display: none; }
         #admin-login-form label { display: block; margin-top: 10px; }
@@ -21,18 +21,22 @@
         .add-item-btn { background-color: #28a745 !important; }
         .add-item-btn:hover { background-color: #218838 !important; }
         .items-section { border-top: 1px solid #444; margin-top: 20px; padding-top: 20px; }
-        .item-listing { display: flex; justify-content: space-between; align-items: center; background-color: #333; padding: 10px; border-radius: 5px; margin-top: 10px; }
+        .item-listing { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; background-color: #333; padding: 10px; border-radius: 5px; margin-top: 10px; gap: 10px; }
         .item-listing button { margin-top: 0; padding: 5px 10px; font-size: 0.9em; }
         .btn-edit { background-color: #ffc107; color: black; }
         .btn-delete { background-color: #dc3545; }
+        .btn-draw { background-color: #17a2b8; }
 
-        /* Modal för item-formulär */
+        /* Modal CSS */
         .modal { position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); }
         .modal-content { background-color: #333; margin: 10% auto; padding: 20px; border-radius: 8px; width: 80%; max-width: 600px; }
         .modal-content label { display: block; margin-top: 10px; }
         .modal-content input, .modal-content textarea { width: 100%; padding: 8px; box-sizing: border-box; background-color: #222; color: #f0f0f0; border: 1px solid #555; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; }
         .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
+        #winner-results { margin-top: 20px; background-color: #2a2a2a; padding: 10px; border-radius: 5px; }
+        #winner-results h4 { margin-top: 0; }
+        #winner-results p { margin: 5px 0; border-bottom: 1px solid #444; padding-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -62,13 +66,9 @@
 
     <div id="item-modal" class="modal hidden">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modal-title">Lägg till/redigera Item</h3>
-                <span class="close-btn">&times;</span>
-            </div>
+            <div class="modal-header"><h3 id="modal-title">Lägg till/redigera Item</h3><span class="close-btn" id="close-item-modal">&times;</span></div>
             <form id="item-form">
-                <input type="hidden" id="modal-page-id">
-                <input type="hidden" id="modal-item-id">
+                <input type="hidden" id="modal-page-id"><input type="hidden" id="modal-item-id">
                 <label for="item-title">Rubrik:</label><input type="text" id="item-title" required>
                 <label for="item-description">Beskrivning:</label><textarea id="item-description" rows="3"></textarea>
                 <label for="item-image">Bild (URL eller filnamn):</label><input type="text" id="item-image">
@@ -77,6 +77,23 @@
                 <label for="item-endTime">Sluttid:</label><input type="datetime-local" id="item-endTime" required>
                 <button type="submit" style="width: 100%; padding: 10px; margin-top: 20px;">Spara Item</button>
             </form>
+        </div>
+    </div>
+    
+    <div id="winner-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="winner-modal-title">Slumpa vinnare</h3><span class="close-btn" id="close-winner-modal">&times;</span></div>
+            <p>Ange hur många vinnare du vill slumpa fram från de som anmält sig.</p>
+            <input type="hidden" id="winner-modal-item-id">
+            <label for="winner-count">Antal vinnare:</label>
+            <input type="number" id="winner-count" value="1" min="1" style="width: 100px; padding: 8px;">
+            <button id="draw-winners-btn" style="padding: 10px 15px;">Slumpa nu!</button>
+            <div id="winner-results" class="hidden">
+                <h4>Vinnare:</h4>
+                <div id="winner-list"></div>
+                <button id="save-winners-btn">Spara vinnare till databasen</button>
+            </div>
+            <p id="winner-feedback"></p>
         </div>
     </div>
 
