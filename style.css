@@ -42,7 +42,7 @@ main {
     flex-direction: column;
     justify-content: flex-end;
     padding: 20px;
-    cursor: pointer; /* Visar att hela kortet är klickbart */
+    cursor: pointer;
 }
 
 .giveaway-card:hover {
@@ -80,22 +80,6 @@ main {
     font-size: 0.95em;
 }
 
-/* Knappen är borttagen, så dess CSS kan tas bort eller behållas för framtiden */
-.giveaway-card-content .btn {
-    display: inline-block;
-    padding: 12px 20px;
-    background-color: #5c67f2;
-    color: #fff;
-    text-decoration: none;
-    border-radius: 5px;
-    font-weight: bold;
-    transition: background-color 0.2s;
-}
-
-.giveaway-card-content .btn:hover {
-    background-color: #4a54e6;
-}
-
 footer {
     text-align: center;
     padding: 20px;
@@ -104,23 +88,19 @@ footer {
 }
 
 
-/* ------ ÄNDRAD CSS FÖR GIVEAWAY-SIDAN ------ */
+/* ------ CSS FÖR GIVEAWAY-SIDAN ------ */
 
+/* Detta är den enda .giveaway-page-main sektionen */
 .giveaway-page-main {
-    /* ÄNDRING: Korrekt filnamn för bakgrunden */
     background-image: url('Background.png');
     background-repeat: repeat;
     min-height: 70vh;
-
-    /* ÄNDRING: Justerat grid för att få plats med fler kort i bredd */
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    
-    /* NY RAD: Hindrar korten från att sträckas ut på höjden */
-    align-items: start; 
+    align-items: start;
+    padding: 0; /* Tas bort eftersom .content-wrapper nu har padding */
 }
 
 .item-card {
-    /* ÄNDRING: Bakgrunden är nu transparent */
     background-color: transparent; 
     border-radius: 8px;
     overflow: hidden;
@@ -129,14 +109,11 @@ footer {
     cursor: pointer;
     text-align: center;
     padding: 15px;
-    
-    /* ÄNDRING: Lade till en synlig ram */
     border: 2px solid rgba(240, 240, 240, 0.4);
 }
 
 .item-card:hover {
     transform: translateY(-5px);
-    /* ÄNDRING: Ramen blir tydligare vid hover för feedback */
     border-color: rgba(240, 240, 240, 0.9);
 }
 
@@ -149,7 +126,6 @@ footer {
 .item-card h3 {
     margin: 10px 0 5px 0;
     font-size: 1.3em;
-    /* NYTT: Text-skugga för läsbarhet mot den nya bakgrunden */
     text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
 }
 
@@ -157,8 +133,54 @@ footer {
     font-size: 0.9em;
     color: #ccc;
     margin: 0;
-    /* NYTT: Text-skugga för läsbarhet mot den nya bakgrunden */
     text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Layout för innehålls-wrapper */
+.content-wrapper {
+    display: grid;
+    grid-template-columns: 3fr 1fr; /* Huvudinnehåll tar 3/4, sidopanel 1/4 */
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Stil för vinnar-sidopanelen */
+#winners-sidebar {
+    background-color: #2a2a2a;
+    padding: 15px;
+    border-radius: 8px;
+    height: fit-content;
+}
+
+#winners-sidebar h3 {
+    margin-top: 0;
+    border-bottom: 2px solid #5c67f2;
+    padding-bottom: 10px;
+}
+
+.winner-entry {
+    border-bottom: 1px solid #444;
+    padding: 10px 0;
+    font-size: 0.9em;
+}
+.winner-entry:last-child {
+    border-bottom: none;
+}
+.winner-entry .winner-name {
+    font-weight: bold;
+    color: #ffc107;
+}
+.winner-entry .item-name {
+    color: #ccc;
+    display: block;
+    font-size: 0.9em;
+}
+
+/* Media-fråga för mindre skärmar */
+@media (max-width: 900px) {
+    .content-wrapper {
+        grid-template-columns: 1fr;
+    }
 }
 
 
