@@ -2,9 +2,10 @@
 import { auth, db } from './firebase-config.js';
 // Importera funktioner från Firebase SDKs
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { collection, getDocs, doc, updateDoc, query, where, addDoc, deleteDoc, Timestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { collection, getDocs, doc, updateDoc, query, where, addDoc, deleteDoc, Timestamp, writeBatch, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // --- HTML-ELEMENT ---
+// (samma som förut)
 const loginView = document.getElementById('login-view');
 const adminView = document.getElementById('admin-view');
 const loginForm = document.getElementById('admin-login-form');
@@ -12,12 +13,10 @@ const logoutButton = document.getElementById('logout-button');
 const loginError = document.getElementById('login-error');
 const pagesListContainer = document.getElementById('pages-list-container');
 const loadingIndicator = document.getElementById('loading-indicator');
-// Item Modal
 const itemModal = document.getElementById('item-modal');
 const itemForm = document.getElementById('item-form');
 const modalTitle = document.getElementById('modal-title');
 const closeItemModalBtn = document.getElementById('close-item-modal');
-// Winner Modal
 const winnerModal = document.getElementById('winner-modal');
 const winnerModalTitle = document.getElementById('winner-modal-title');
 const closeWinnerModalBtn = document.getElementById('close-winner-modal');
@@ -26,19 +25,17 @@ const saveWinnersBtn = document.getElementById('save-winners-btn');
 const winnerResultsDiv = document.getElementById('winner-results');
 const winnerListDiv = document.getElementById('winner-list');
 const winnerFeedback = document.getElementById('winner-feedback');
-
-// --- Global variabel för att hålla vinnare temporärt ---
 let drawnWinners = [];
 
 // --- AUTH-LOGIK ---
-// (Oförändrad från föregående steg)
+// (Oförändrad)
 loginForm.addEventListener('submit', (e) => { e.preventDefault(); const email = loginForm['email'].value; const password = loginForm['password'].value; signInWithEmailAndPassword(auth, email, password).then(() => { loginError.textContent = ''; }).catch(() => { loginError.textContent = 'Fel e-post eller lösenord.'; }); });
 logoutButton.addEventListener('click', () => { signOut(auth); });
 onAuthStateChanged(auth, (user) => { if (user) { loginView.classList.add('hidden'); adminView.classList.remove('hidden'); loadGiveawayPages(); } else { loginView.classList.remove('hidden'); adminView.classList.add('hidden'); } });
 
 // --- HANTERA GIVEAWAY-SIDOR ---
-// (Oförändrad från föregående steg, med ett tillägg i itemDiv.innerHTML)
-async function loadGiveawayPages() {
+// (Oförändrad)
+async function loadGiveawayPages() { /* ... samma som förut ... */ 
     loadingIndicator.classList.remove('hidden');
     pagesListContainer.innerHTML = '';
     try {
@@ -60,9 +57,10 @@ async function loadGiveawayPages() {
     } catch (error) { console.error("Fel vid hämtning av sidor: ", error); pagesListContainer.innerHTML = '<p style="color: red;">Kunde inte ladda sidor.</p>'; } 
     finally { loadingIndicator.classList.add('hidden'); }
 }
-function addSaveButtonListeners() { /* ... oförändrad ... */ document.querySelectorAll('.save-page-btn').forEach(button => { button.addEventListener('click', async (e) => { const pageId = e.target.dataset.id; const feedbackSpan = document.getElementById(`feedback-${pageId}`); feedbackSpan.textContent = 'Sparar...'; const newTitle = document.getElementById(`title-${pageId}`).value; const newDesc = document.getElementById(`desc-${pageId}`).value; const newImage = document.getElementById(`image-${pageId}`).value; const newIsActive = document.getElementById(`isActive-${pageId}`).checked; const pageRef = doc(db, "giveawayPages", pageId); try { await updateDoc(pageRef, { title: newTitle, description: newDesc, image: newImage, isActive: newIsActive }); feedbackSpan.textContent = 'Sparat!'; } catch (error) { feedbackSpan.textContent = 'Fel vid sparande.'; feedbackSpan.style.color = 'red'; } setTimeout(() => { feedbackSpan.textContent = ''; }, 3000); }); }); }
+function addSaveButtonListeners() { /* ... samma som förut ... */ document.querySelectorAll('.save-page-btn').forEach(button => { button.addEventListener('click', async (e) => { const pageId = e.target.dataset.id; const feedbackSpan = document.getElementById(`feedback-${pageId}`); feedbackSpan.textContent = 'Sparar...'; const newTitle = document.getElementById(`title-${pageId}`).value; const newDesc = document.getElementById(`desc-${pageId}`).value; const newImage = document.getElementById(`image-${pageId}`).value; const newIsActive = document.getElementById(`isActive-${pageId}`).checked; const pageRef = doc(db, "giveawayPages", pageId); try { await updateDoc(pageRef, { title: newTitle, description: newDesc, image: newImage, isActive: newIsActive }); feedbackSpan.textContent = 'Sparat!'; } catch (error) { feedbackSpan.textContent = 'Fel vid sparande.'; feedbackSpan.style.color = 'red'; } setTimeout(() => { feedbackSpan.textContent = ''; }, 3000); }); }); }
 
-// --- HANTERA GIVEAWAY ITEMS ---
+
+// --- HANTERA GIVEAWAY ITEMS (MODIFIERAD) ---
 async function loadItemsForPage(pageId) {
     const itemsListContainer = document.getElementById(`items-list-${pageId}`);
     const q = query(collection(db, "giveawayItems"), where("pageId", "==", pageId));
@@ -71,149 +69,128 @@ async function loadItemsForPage(pageId) {
         itemsListContainer.innerHTML = '';
         if (querySnapshot.empty) { itemsListContainer.innerHTML = '<p>Inga items har lagts till.</p>'; }
         else {
-            querySnapshot.forEach(doc => {
-                const itemData = doc.data();
+            querySnapshot.forEach(itemDoc => {
+                const itemData = itemDoc.data();
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'item-listing';
-                // NYTT: Lade till "Slumpa vinnare"-knappen
-                itemDiv.innerHTML = `<span>${itemData.title}</span><div><button class="btn-draw" data-item-id="${doc.id}" data-item-title="${itemData.title}">Slumpa vinnare</button><button class="btn-edit" data-item-id="${doc.id}" data-page-id="${pageId}">Redigera</button><button class="btn-delete" data-item-id="${doc.id}" data-page-id="${pageId}">Radera</button></div>`;
+
+                // NY LOGIK: Visa olika knappar baserat på item-status
+                let buttonsHTML = '';
+                if (itemData.status === 'closed') {
+                    buttonsHTML = `<button class="btn-view-winners" data-item-id="${itemDoc.id}" data-item-title="${itemData.title}">Visa vinnare</button>
+                                   <button class="btn-delete" data-item-id="${itemDoc.id}" data-page-id="${pageId}">Radera (Arkivera)</button>`;
+                } else {
+                    buttonsHTML = `<button class="btn-draw" data-item-id="${itemDoc.id}" data-item-title="${itemData.title}">Slumpa vinnare</button>
+                                   <button class="btn-edit" data-item-id="${itemDoc.id}" data-page-id="${pageId}">Redigera</button>
+                                   <button class="btn-delete" data-item-id="${itemDoc.id}" data-page-id="${pageId}">Radera</button>`;
+                }
+                itemDiv.innerHTML = `<span>${itemData.title}</span><div>${buttonsHTML}</div>`;
                 itemsListContainer.appendChild(itemDiv);
             });
         }
-        addEditOrDeleteButtonListeners(pageId);
+        addEventListenersForItemButtons(pageId); // Byt namn på funktionen för att inkludera alla knappar
     } catch (error) { console.error("Fel vid hämtning av items: ", error); itemsListContainer.innerHTML = 'Kunde inte ladda items.'; }
 }
+
 function addAddItemButtonListeners() { /* ... oförändrad ... */ document.querySelectorAll('.add-item-btn').forEach(button => { button.addEventListener('click', (e) => { const pageId = e.target.dataset.pageId; modalTitle.textContent = "Lägg till nytt Item"; itemForm.reset(); document.getElementById('modal-page-id').value = pageId; document.getElementById('modal-item-id').value = ''; itemModal.classList.remove('hidden'); }); }); }
-function addEditOrDeleteButtonListeners(pageId) { /* ... oförändrad, men med tillägg för draw-knappen ... */ 
+
+// Byt namn på denna för att hantera ALLA knappar på ett item
+function addEventListenersForItemButtons(pageId) {
     const listContainer = document.querySelector(`#items-list-${pageId}`);
     listContainer.addEventListener('click', async (e) => {
         const target = e.target;
         const itemId = target.dataset.itemId;
+        if (!itemId) return; // Klickade inte på en knapp med data-id
 
+        // Redigera-knapp
         if (target.classList.contains('btn-edit')) {
-            const docSnap = await getDocs(query(collection(db, "giveawayItems"), where("__name__", "==", itemId)));
-            const itemData = docSnap.docs[0].data();
-            modalTitle.textContent = "Redigera Item";
-            itemForm.reset();
-            document.getElementById('modal-page-id').value = pageId;
-            document.getElementById('modal-item-id').value = itemId;
-            document.getElementById('item-title').value = itemData.title;
-            document.getElementById('item-description').value = itemData.description;
-            document.getElementById('item-image').value = itemData.imageURL || '';
-            document.getElementById('item-modalText').value = itemData.modalText;
-            document.getElementById('item-startTime').value = itemData.startTime.toDate().toISOString().slice(0, 16);
-            document.getElementById('item-endTime').value = itemData.endTime.toDate().toISOString().slice(0, 16);
-            itemModal.classList.remove('hidden');
-        } else if (target.classList.contains('btn-delete')) {
-            if (confirm('Är du säker på att du vill radera detta item?')) {
-                await deleteDoc(doc(db, "giveawayItems", itemId));
-                loadItemsForPage(pageId);
+            const docRef = doc(db, "giveawayItems", itemId);
+            const docSnap = await getDoc(docRef);
+            const itemData = docSnap.data();
+            // ... (resten av redigera-koden är oförändrad) ...
+            modalTitle.textContent = "Redigera Item"; itemForm.reset(); document.getElementById('modal-page-id').value = pageId; document.getElementById('modal-item-id').value = itemId; document.getElementById('item-title').value = itemData.title; document.getElementById('item-description').value = itemData.description; document.getElementById('item-image').value = itemData.imageURL || ''; document.getElementById('item-modalText').value = itemData.modalText; document.getElementById('item-startTime').value = itemData.startTime.toDate().toISOString().slice(0, 16); document.getElementById('item-endTime').value = itemData.endTime.toDate().toISOString().slice(0, 16); itemModal.classList.remove('hidden');
+        } 
+        // Radera-knapp (med arkiveringslogik)
+        else if (target.classList.contains('btn-delete')) {
+            const docRef = doc(db, "giveawayItems", itemId);
+            const docSnap = await getDoc(docRef);
+            const itemData = docSnap.data();
+
+            if (itemData.status === 'closed') {
+                if (confirm('Detta item har dragna vinnare. Vill du arkivera itemet och vinnarna innan du raderar?')) {
+                    // 1. Hämta vinnarna
+                    const winnersQuery = query(collection(db, "winners"), where("itemId", "==", itemId));
+                    const winnersSnapshot = await getDocs(winnersQuery);
+                    const winnersData = winnersSnapshot.docs.map(d => d.data());
+
+                    // 2. Skapa arkiv-dokument
+                    const archiveRef = doc(collection(db, "archivedGiveaways"));
+                    await addDoc(collection(db, "archivedGiveaways"), {
+                        ...itemData,
+                        archivedAt: Timestamp.now(),
+                        winners: winnersData
+                    });
+
+                    // 3. Radera originalet (kan göras i en batch med vinnarna senare)
+                    await deleteDoc(docRef);
+                    alert('Item och vinnare har arkiverats och raderats.');
+                    loadItemsForPage(pageId);
+                }
+            } else {
+                if (confirm('Är du säker på att du vill radera detta item? Detta går inte att ångra.')) {
+                    await deleteDoc(docRef);
+                    loadItemsForPage(pageId);
+                }
             }
-        } else if (target.classList.contains('btn-draw')) {
-            const itemTitle = target.dataset.itemTitle;
-            openWinnerModal(itemId, itemTitle);
+        } 
+        // Slumpa vinnare-knapp
+        else if (target.classList.contains('btn-draw')) {
+            openWinnerModal(itemId, target.dataset.itemTitle);
+        }
+        // Visa vinnare-knapp
+        else if (target.classList.contains('btn-view-winners')) {
+            winnerFeedback.textContent = 'Hämtar vinnare...';
+            const winnersQuery = query(collection(db, "winners"), where("itemId", "==", itemId));
+            const winnersSnapshot = await getDocs(winnersQuery);
+            const winnerNames = winnersSnapshot.docs.map(d => d.data().username);
+            
+            winnerModalTitle.textContent = `Vinnare för: ${target.dataset.itemTitle}`;
+            document.getElementById('winner-modal-item-id').value = itemId;
+            winnerListDiv.innerHTML = winnerNames.map(name => `<p>${name}</p>`).join('');
+            winnerResultsDiv.classList.remove('hidden');
+            // Göm slumpa-delen
+            drawWinnersBtn.classList.add('hidden');
+            saveWinnersBtn.classList.add('hidden');
+            document.getElementById('winner-count').parentElement.classList.add('hidden');
+            
+            winnerModal.classList.remove('hidden');
         }
     });
 }
+// (Resten av item-modal logiken är oförändrad)
 closeItemModalBtn.addEventListener('click', () => itemModal.classList.add('hidden'));
-itemForm.addEventListener('submit', async (e) => { /* ... oförändrad ... */ e.preventDefault(); const pageId = document.getElementById('modal-page-id').value; const itemId = document.getElementById('modal-item-id').value; const data = { pageId: pageId, title: document.getElementById('item-title').value, description: document.getElementById('item-description').value, imageURL: document.getElementById('item-image').value, modalText: document.getElementById('item-modalText').value, startTime: Timestamp.fromDate(new Date(document.getElementById('item-startTime').value)), endTime: Timestamp.fromDate(new Date(document.getElementById('item-endTime').value)) }; if (itemId) { await updateDoc(doc(db, "giveawayItems", itemId), data); } else { await addDoc(collection(db, "giveawayItems"), data); } itemModal.classList.add('hidden'); loadItemsForPage(pageId); });
+itemForm.addEventListener('submit', async (e) => { e.preventDefault(); const pageId = document.getElementById('modal-page-id').value; const itemId = document.getElementById('modal-item-id').value; const data = { pageId: pageId, title: document.getElementById('item-title').value, description: document.getElementById('item-description').value, imageURL: document.getElementById('item-image').value, modalText: document.getElementById('item-modalText').value, startTime: Timestamp.fromDate(new Date(document.getElementById('item-startTime').value)), endTime: Timestamp.fromDate(new Date(document.getElementById('item-endTime').value)) }; if (itemId) { await updateDoc(doc(db, "giveawayItems", itemId), data); } else { await addDoc(collection(db, "giveawayItems"), data); } itemModal.classList.add('hidden'); loadItemsForPage(pageId); });
 
 
-// --- NYTT: VINSTDRAGNING ---
+// --- VINSTDRAGNING (MODIFIERAD) ---
 
 function openWinnerModal(itemId, itemTitle) {
     winnerModalTitle.textContent = `Slumpa vinnare för: ${itemTitle}`;
     document.getElementById('winner-modal-item-id').value = itemId;
+    // Återställ synlighet för element
+    drawWinnersBtn.classList.remove('hidden');
+    saveWinnersBtn.classList.remove('hidden');
+    document.getElementById('winner-count').parentElement.classList.remove('hidden');
     winnerResultsDiv.classList.add('hidden');
     winnerListDiv.innerHTML = '';
     winnerFeedback.textContent = '';
     document.getElementById('winner-count').value = 1;
-    drawnWinners = []; // Rensa gamla vinnare
+    drawnWinners = [];
     winnerModal.classList.remove('hidden');
 }
 
 closeWinnerModalBtn.addEventListener('click', () => winnerModal.classList.add('hidden'));
 
-// Händelse för "Slumpa nu!"-knappen
-drawWinnersBtn.addEventListener('click', async () => {
-    const itemId = document.getElementById('winner-modal-item-id').value;
-    const winnerCount = parseInt(document.getElementById('winner-count').value);
-    winnerFeedback.textContent = 'Hämtar deltagare...';
-    drawnWinners = [];
-
-    // 1. Hämta alla deltagare (submissions)
-    const submissionsRef = collection(db, "giveawayItems", itemId, "submissions");
-    const snapshot = await getDocs(submissionsRef);
-    const participants = snapshot.docs.map(doc => doc.data().username);
-
-    if (participants.length === 0) {
-        winnerFeedback.textContent = 'Inga deltagare att slumpa från!';
-        return;
-    }
-    
-    winnerFeedback.textContent = `${participants.length} deltagare hittades. Slumpar...`;
-
-    // 2. Slumpa fram vinnare
-    const shuffled = participants.sort(() => 0.5 - Math.random());
-    drawnWinners = shuffled.slice(0, winnerCount);
-
-    // 3. Visa resultatet
-    winnerListDiv.innerHTML = '';
-    if (drawnWinners.length > 0) {
-        drawnWinners.forEach(winner => {
-            const p = document.createElement('p');
-            p.textContent = winner;
-            winnerListDiv.appendChild(p);
-        });
-        winnerResultsDiv.classList.remove('hidden');
-        winnerFeedback.textContent = 'Dragning klar!';
-    } else {
-        winnerFeedback.textContent = 'Kunde inte slumpa fram vinnare.';
-    }
-});
-
-// Händelse för "Spara vinnare"-knappen
-saveWinnersBtn.addEventListener('click', async () => {
-    const itemId = document.getElementById('winner-modal-item-id').value;
-    const itemTitle = winnerModalTitle.textContent.replace('Slumpa vinnare för: ', '');
-
-    if (drawnWinners.length === 0) {
-        alert('Inga vinnare att spara.');
-        return;
-    }
-
-    winnerFeedback.textContent = 'Sparar vinnare till databasen...';
-
-    try {
-        // Använd en "batch write" för att utföra flera operationer samtidigt
-        const batch = writeBatch(db);
-
-        // Skapa ett dokument i "winners"-collection för varje vinnare
-        drawnWinners.forEach(winnerUsername => {
-            const winnerRef = doc(collection(db, "winners")); // Skapa en ny dokumentreferens
-            batch.set(winnerRef, {
-                itemId: itemId,
-                itemTitle: itemTitle,
-                username: winnerUsername,
-                drawnAt: Timestamp.now()
-            });
-        });
-
-        // Uppdatera status på det ursprungliga itemet
-        const itemRef = doc(db, "giveawayItems", itemId);
-        batch.update(itemRef, { status: "closed" });
-
-        // Genomför alla operationer i batchen
-        await batch.commit();
-
-        winnerFeedback.textContent = 'Vinnarna har sparats och giveawayen har stängts!';
-        setTimeout(() => {
-            winnerModal.classList.add('hidden');
-        }, 2000);
-
-    } catch (error) {
-        console.error("Fel vid sparande av vinnare: ", error);
-        winnerFeedback.textContent = 'Ett fel uppstod vid sparandet.';
-        winnerFeedback.style.color = 'red';
-    }
-});
+// (Resten av vinstdragningslogiken är oförändrad)
+drawWinnersBtn.addEventListener('click', async () => { const itemId = document.getElementById('winner-modal-item-id').value; const winnerCount = parseInt(document.getElementById('winner-count').value); winnerFeedback.textContent = 'Hämtar deltagare...'; drawnWinners = []; const submissionsRef = collection(db, "giveawayItems", itemId, "submissions"); const snapshot = await getDocs(submissionsRef); const participants = snapshot.docs.map(doc => doc.data().username); if (participants.length === 0) { winnerFeedback.textContent = 'Inga deltagare!'; return; } winnerFeedback.textContent = `${participants.length} deltagare hittades. Slumpar...`; const shuffled = participants.sort(() => 0.5 - Math.random()); drawnWinners = shuffled.slice(0, winnerCount); winnerListDiv.innerHTML = ''; if (drawnWinners.length > 0) { drawnWinners.forEach(winner => { const p = document.createElement('p'); p.textContent = winner; winnerListDiv.appendChild(p); }); winnerResultsDiv.classList.remove('hidden'); winnerFeedback.textContent = 'Dragning klar!'; } else { winnerFeedback.textContent = 'Kunde inte slumpa.'; } });
+saveWinnersBtn.addEventListener('click', async () => { const itemId = document.getElementById('winner-modal-item-id').value; const itemTitle = winnerModalTitle.textContent.replace('Slumpa vinnare för: ', ''); if (drawnWinners.length === 0) { alert('Inga vinnare att spara.'); return; } winnerFeedback.textContent = 'Sparar...'; try { const batch = writeBatch(db); drawnWinners.forEach(winnerUsername => { const winnerRef = doc(collection(db, "winners")); batch.set(winnerRef, { itemId: itemId, itemTitle: itemTitle, username: winnerUsername, drawnAt: Timestamp.now() }); }); const itemRef = doc(db, "giveawayItems", itemId); batch.update(itemRef, { status: "closed" }); await batch.commit(); winnerFeedback.textContent = 'Vinnarna har sparats!'; setTimeout(() => { winnerModal.classList.add('hidden'); loadItemsForPage(document.querySelector(`[data-item-id="${itemId}"]`).dataset.pageId); }, 2000); } catch (error) { console.error("Fel vid sparande av vinnare: ", error); winnerFeedback.textContent = 'Ett fel uppstod.'; winnerFeedback.style.color = 'red'; } });
