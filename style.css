@@ -272,3 +272,42 @@ footer {
 .modal-content button:hover {
     background-color: #4a54e6;
 }
+
+/* NYTT: Styling för navigeringsmenyn i headern */
+nav#main-nav {
+    padding-top: 10px;
+}
+
+nav#main-nav a {
+    color: #f0f0f0;
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+    transition: color 0.2s;
+}
+
+nav#main-nav a:hover {
+    color: #5c67f2;
+}
+
+
+/* NYTT: Styling för vinnarlistan på startsidan (liknar den andra) */
+#homepage-winners-sidebar {
+    background-color: #2a2a2a;
+    padding: 15px;
+    border-radius: 8px;
+    height: fit-content;
+}
+
+#homepage-winners-sidebar h3 {
+    margin-top: 0;
+    border-bottom: 2px solid #5c67f2;
+    padding-bottom: 10px;
+}
+
+/* Media-fråga för mindre skärmar (oförändrad) */
+@media (max-width: 900px) {
+    .content-wrapper {
+        grid-template-columns: 1fr;
+    }
+}
