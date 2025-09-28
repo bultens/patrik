@@ -21,11 +21,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Debug Print Secret Content
-        run: echo "${{ secrets.FIREBASE_CONFIG }}"
-
       - name: Create Firebase Config
-        run: echo "${{ secrets.FIREBASE_CONFIG }}" > firebase-config.js
+        run: |
+          echo "const firebaseConfig = ${{ secrets.FIREBASE_CONFIG }};" > firebase-config.js
+          echo "" >> firebase-config.js
+          echo "// Importera funktioner från Firebase SDKs" >> firebase-config.js
+          echo "import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';" >> firebase-config.js
+          echo "import { getAuth } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';" >> firebase-config.js
+          echo "import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';" >> firebase-config.js
+          echo "import { getStorage } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';" >> firebase-config.js
+          echo "" >> firebase-config.js
+          echo "// Initiera Firebase" >> firebase-config.js
+          echo "const app = initializeApp(firebaseConfig);" >> firebase-config.js
+          echo "" >> firebase-config.js
+          echo "// Exportera de tjänster vi kommer att använda i andra filer" >> firebase-config.js
+          echo "export const auth = getAuth(app);" >> firebase-config.js
+          echo "export const db = getFirestore(app);" >> firebase-config.js
+          echo "export const storage = getStorage(app);" >> firebase-config.js
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
