@@ -21,10 +21,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # --- NYTT FELSÖKNINGSSTEG ---
-      - name: Debug: Print Secret Content
+      - name: Debug Print Secret Content
         run: echo "${{ secrets.FIREBASE_CONFIG }}"
-      # ---------------------------
 
       - name: Create Firebase Config
         run: echo "${{ secrets.FIREBASE_CONFIG }}" > firebase-config.js
