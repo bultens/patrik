@@ -1,19 +1,15 @@
 name: Deploy to GitHub Pages
 
-# Kör detta arbetsflöde varje gång du pushar till "main"-branchen
 on:
   push:
     branches: [ "main" ]
-  # Låter dig köra detta arbetsflöde manuellt från Actions-fliken
   workflow_dispatch:
 
-# Sätt behörigheter för att tillåta publicering till GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Tillåt endast en samtidig publicering, avbryt tidigare körningar
 concurrency:
   group: "pages"
   cancel-in-progress: true
@@ -24,6 +20,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # --- NYTT FELSÖKNINGSSTEG ---
+      - name: Debug: Print Secret Content
+        run: echo "${{ secrets.FIREBASE_CONFIG }}"
+      # ---------------------------
 
       - name: Create Firebase Config
         run: echo "${{ secrets.FIREBASE_CONFIG }}" > firebase-config.js
