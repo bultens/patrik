@@ -1,20 +1,6 @@
 import { db } from './firebase-config.js';
+import { generateNavbar } from './shared.js';
 import { collection, query, where, getDocs, addDoc, doc, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-async function generateNavbar() {
-    const navContainer = document.getElementById('main-nav');
-    if (!navContainer) return;
-
-    const pagesQuery = query(collection(db, "giveawayPages"), where("isActive", "==", true), orderBy("order"));
-    const querySnapshot = await getDocs(pagesQuery);
-
-    let navHTML = `<a href="index.html">Main</a>`;
-    querySnapshot.forEach(doc => {
-        const page = doc.data();
-        navHTML += `<a href="giveaway.html?page=${page.pageId}">${page.title}</a>`;
-    });
-    navContainer.innerHTML = navHTML;
-}
 
 document.addEventListener('DOMContentLoaded', function() {
     generateNavbar();
@@ -84,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     statusHTML = `<small>Starts: ${startTime.toLocaleString('en-GB')}</small>`;
                 }
 
-                card.innerHTML = `<img src="${itemData.imageURL}" alt="${itemData.title}"><<h3>${itemData.title}</h3><p>${itemData.description}</p><div class="status-container">${statusHTML}</div>`;
+                card.innerHTML = `<img src="${itemData.imageURL}" alt="${itemData.title}"><h3>${itemData.title}</h3><p>${itemData.description}</p><div class="status-container">${statusHTML}</div>`;
                 
                 if (isClickable) {
                     card.addEventListener('click', () => {

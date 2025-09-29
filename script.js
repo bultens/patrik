@@ -1,20 +1,6 @@
 import { db } from './firebase-config.js';
+import { generateNavbar } from './shared.js';
 import { collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-async function generateNavbar() {
-    const navContainer = document.getElementById('main-nav');
-    if (!navContainer) return;
-
-    const pagesQuery = query(collection(db, "giveawayPages"), where("isActive", "==", true), orderBy("order"));
-    const querySnapshot = await getDocs(pagesQuery);
-
-    let navHTML = `<a href="index.html">Main</a>`;
-    querySnapshot.forEach(doc => {
-        const page = doc.data();
-        navHTML += `<a href="giveaway.html?page=${page.pageId}">${page.title}</a>`;
-    });
-    navContainer.innerHTML = navHTML;
-}
 
 async function loadHomepageGiveaways() {
     const container = document.getElementById('giveaway-container');
@@ -32,7 +18,11 @@ async function loadHomepageGiveaways() {
         querySnapshot.forEach((doc) => {
             const giveaway = doc.data();
             const cardLink = document.createElement('a');
-            cardLink.href = `giveaway.html?page=${giveaway.pageId}`;
+            
+            // Länka till rätt sida baserat på typ
+            const pageUrl = giveaway.pageType === 'guide' ? 'guide.html' : 'giveaway.html';
+            cardLink.href = `${pageUrl}?page=${giveaway.pageId}`;
+            
             cardLink.className = 'giveaway-card-link';
             const card = document.createElement('div');
             card.className = 'giveaway-card';
