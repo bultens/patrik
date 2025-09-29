@@ -7,9 +7,37 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <style>
+        /* Extra stilar specifika för admin-panelen för att hålla huvud-CSS ren */
+        .admin-container { max-width: 800px; margin: 40px auto; padding: 20px; }
+        .hidden { display: none; }
+        .page-card { background-color: #2a2a2a; border-radius: 8px; padding: 20px; margin-top: 20px; }
+        .page-card label { display: block; margin-top: 15px; font-weight: bold; }
+        .page-card input[type="text"], .page-card input[type="number"], .page-card textarea, .page-card select { width: 100%; padding: 8px; box-sizing: border-box; background-color: #333; color: #f0f0f0; border: 1px solid #555; border-radius: 4px; }
+        .page-card .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 15px; }
+        .page-card button { padding: 10px 15px; margin-top: 20px; background-color: #5c67f2; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .page-card button:hover { background-color: #4a54e6; }
         .page-card .header { display: flex; align-items: center; gap: 10px; }
         .drag-handle { cursor: grab; font-size: 1.5em; color: #777; }
         .drag-handle:active { cursor: grabbing; }
+        .add-item-btn { background-color: #28a745 !important; }
+        .add-item-btn:hover { background-color: #218838 !important; }
+        .items-section { border-top: 1px solid #444; margin-top: 20px; padding-top: 20px; }
+        .item-listing { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; background-color: #333; padding: 10px; border-radius: 5px; margin-top: 10px; gap: 10px; }
+        .item-listing button { margin-top: 0; padding: 5px 10px; font-size: 0.9em; }
+        .btn-edit { background-color: #ffc107; color: black; }
+        .btn-delete { background-color: #dc3545; }
+        .btn-draw { background-color: #17a2b8; }
+        .btn-view-winners { background-color: #6f42c1; }
+        /* Modal CSS */
+        .modal { position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; }
+        .modal-content { background-color: #333; padding: 20px; border-radius: 8px; width: 80%; max-width: 600px; }
+        .modal-content label { display: block; margin-top: 10px; }
+        .modal-content input, .modal-content textarea { width: 100%; padding: 8px; box-sizing: border-box; background-color: #222; color: #f0f0f0; border: 1px solid #555; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; }
+        .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
+        #winner-results { margin-top: 20px; background-color: #2a2a2a; padding: 10px; border-radius: 5px; }
+        #winner-results h4 { margin-top: 0; }
+        #winner-results p { margin: 5px 0; border-bottom: 1px solid #444; padding-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -38,8 +66,40 @@
         </div>
     </main>
     
-    <div id="item-modal" class="modal hidden"> ... </div>
-    <div id="winner-modal" class="modal hidden"> ... </div>
+    <div id="item-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="modal-title">Add/Edit Item</h3><span class="close-btn" id="close-item-modal">&times;</span></div>
+            <form id="item-form">
+                <input type="hidden" id="modal-page-id"><input type="hidden" id="modal-item-id">
+                <label for="item-title">Title:</label><input type="text" id="item-title" required>
+                <label for="item-description">Description:</label><textarea id="item-description" rows="3"></textarea>
+                <label for="item-image">Image (URL or filename):</label><input type="text" id="item-image">
+                <label for="item-modalText">Text in sign-up modal:</label><textarea id="item-modalText" rows="3"></textarea>
+                <label for="item-startTime">Start time:</label><input type="datetime-local" id="item-startTime" required>
+                <label for="item-endTime">End time:</label><input type="datetime-local" id="item-endTime" required>
+                <button type="submit" style="width: 100%; padding: 10px; margin-top: 20px;">Save Item</button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="winner-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="winner-modal-title">Draw Winners</h3><span class="close-btn" id="close-winner-modal">&times;</span></div>
+            <input type="hidden" id="winner-modal-item-id">
+            <div id="draw-view">
+                <p>Enter the number of winners you want to draw.</p>
+                <label for="winner-count">Number of winners:</label>
+                <input type="number" id="winner-count" value="1" min="1" style="width: 100px; padding: 8px;">
+                <button id="draw-winners-btn" style="padding: 10px 15px;">Draw Now!</button>
+            </div>
+            <div id="winner-results" class="hidden">
+                <h4>Winners:</h4>
+                <div id="winner-list"></div>
+                <button id="save-winners-btn">Save Winners to Database</button>
+            </div>
+            <p id="winner-feedback"></p>
+        </div>
+    </div>
 
     <footer><p>&copy; 2025 Free Game Giveaways - Admin</p></footer>
     <script type="module" src="admin.js"></script>
