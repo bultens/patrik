@@ -24,7 +24,6 @@ main {
     gap: 20px;
 }
 
-/* Wrapper för kortlänken för att ta bort standard-utseende på länkar */
 .giveaway-card-link {
     text-decoration: none;
     color: inherit;
@@ -87,17 +86,14 @@ footer {
     margin-top: 20px;
 }
 
-
 /* ------ CSS FÖR GIVEAWAY-SIDAN ------ */
-
-/* Detta är den enda .giveaway-page-main sektionen */
 .giveaway-page-main {
     background-image: url('Background.png');
     background-repeat: repeat;
     min-height: 70vh;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     align-items: start;
-    padding: 0; /* Tas bort eftersom .content-wrapper nu har padding */
+    padding: 0;
 }
 
 .item-card {
@@ -123,191 +119,83 @@ footer {
     border-radius: 5px;
 }
 
-.item-card h3 {
-    margin: 10px 0 5px 0;
-    font-size: 1.3em;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
-}
+.item-card h3 { margin: 10px 0 5px 0; font-size: 1.3em; text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8); }
+.item-card p { font-size: 0.9em; color: #ccc; margin: 0; text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8); }
 
-.item-card p {
-    font-size: 0.9em;
-    color: #ccc;
-    margin: 0;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
-}
-
-/* Layout för innehålls-wrapper */
 .content-wrapper {
     display: grid;
-    grid-template-columns: 3fr 1fr; /* Huvudinnehåll tar 3/4, sidopanel 1/4 */
+    grid-template-columns: 3fr 1fr;
     gap: 20px;
     padding: 20px;
 }
 
-/* Stil för vinnar-sidopanelen */
-#winners-sidebar {
+#winners-sidebar, #homepage-winners-sidebar {
     background-color: #2a2a2a;
     padding: 15px;
     border-radius: 8px;
     height: fit-content;
 }
 
-#winners-sidebar h3 {
+#winners-sidebar h3, #homepage-winners-sidebar h3 {
     margin-top: 0;
     border-bottom: 2px solid #5c67f2;
     padding-bottom: 10px;
 }
 
-.winner-entry {
-    border-bottom: 1px solid #444;
-    padding: 10px 0;
-    font-size: 0.9em;
-}
-.winner-entry:last-child {
-    border-bottom: none;
-}
-.winner-entry .winner-name {
-    font-weight: bold;
-    color: #ffc107;
-}
-.winner-entry .item-name {
-    color: #ccc;
-    display: block;
-    font-size: 0.9em;
-}
+.winner-entry { border-bottom: 1px solid #444; padding: 10px 0; font-size: 0.9em; }
+.winner-entry:last-child { border-bottom: none; }
+.winner-entry .winner-name { font-weight: bold; color: #ffc107; }
+.winner-entry .item-name { color: #ccc; display: block; font-size: 0.9em; }
 
-/* Media-fråga för mindre skärmar */
+nav#main-nav { padding-top: 10px; }
+nav#main-nav a { color: #f0f0f0; text-decoration: none; margin: 0 15px; font-weight: bold; transition: color 0.2s; }
+nav#main-nav a:hover { color: #5c67f2; }
+
 @media (max-width: 900px) {
-    .content-wrapper {
-        grid-template-columns: 1fr;
-    }
+    .content-wrapper { grid-template-columns: 1fr; }
 }
 
-
-/* ------ CSS FÖR MODAL-FÖNSTRET (Oförändrad) ------ */
-
-.modal-overlay {
-    display: none; 
-    position: fixed; 
-    z-index: 1000; 
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto; 
-    background-color: rgba(0,0,0,0.7); 
-    justify-content: center;
-    align-items: center;
+/* ------ CSS FÖR ADMIN-PANELEN ------ */
+.admin-container { width: 95%; max-width: 1400px; margin: 40px auto; padding: 20px; }
+.page-card {
+    background-color: #2a2a2a; border-radius: 8px; padding: 20px; margin-top: 20px;
+    display: grid;
+    grid-template-columns: 250px 1fr; /* Smal vänsterkolumn för inställningar, bred höger för innehåll */
+    gap: 10px 30px;
 }
-
-.modal-content {
-    background-color: #333;
-    margin: auto;
-    padding: 25px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 400px;
-    border-radius: 8px;
-    position: relative;
-    color: #f0f0f0;
-    animation: fadeIn 0.3s;
+.page-card > .header, 
+.page-card > .guide-fields,
+.page-card > .giveaway-fields,
+.page-card > .save-page-btn,
+.page-card > span {
+    grid-column: 1 / -1; /* Får dessa att sträcka sig över båda kolumnerna */
 }
-
-@keyframes fadeIn {
-    from {opacity: 0; transform: scale(0.9);}
-    to {opacity: 1; transform: scale(1);}
+.page-card label, .page-card select, .page-card input, .page-card textarea, .page-card .checkbox-group {
+    grid-column: 1 / 2; /* Lägger alla mindre fält i första kolumnen */
 }
-
-.close-button {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    position: absolute;
-    top: 10px;
-    right: 20px;
+.page-card > .guide-fields {
+    grid-column: 2 / 3; /* Lägger den stora textredigeraren i andra kolumnen */
+    grid-row: 2 / span 10; /* Låter den ta upp flera rader i höjdled */
 }
+.page-card label { display: block; margin-top: 15px; font-weight: bold; }
+.page-card input[type="text"], .page-card input[type="number"], .page-card textarea, .page-card select { width: 100%; padding: 8px; box-sizing: border-box; background-color: #333; color: #f0f0f0; border: 1px solid #555; border-radius: 4px; }
+.page-card .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 15px; }
+.page-card button { padding: 10px 15px; margin-top: 20px; background-color: #5c67f2; color: white; border: none; border-radius: 5px; cursor: pointer; }
+.page-card .header { display: flex; align-items: center; gap: 10px; }
+.drag-handle { cursor: grab; font-size: 1.5em; color: #777; }
+.items-section { border-top: 1px solid #444; margin-top: 20px; padding-top: 20px; }
+.item-listing { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; background-color: #333; padding: 10px; border-radius: 5px; margin-top: 10px; gap: 10px; }
+.item-listing button { margin-top: 0; padding: 5px 10px; font-size: 0.9em; }
+.btn-edit { background-color: #ffc107; color: black; }
+.btn-delete { background-color: #dc3545; }
+.btn-draw { background-color: #17a2b8; }
+.btn-view-winners { background-color: #6f42c1; }
 
-.close-button:hover,
-.close-button:focus {
-    color: #fff;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.modal-content h2 {
-    margin-top: 0;
-}
-
-.modal-content label {
-    display: block;
-    margin-top: 15px;
-    margin-bottom: 5px;
-}
-
-.modal-content input[type="text"] {
-    width: 100%;
-    padding: 10px;
-    border-radius: 4px;
-    border: 1px solid #555;
-    background-color: #222;
-    color: #f0f0f0;
-    box-sizing: border-box;
-}
-
-.modal-content button {
-    width: 100%;
-    padding: 12px 20px;
-    background-color: #5c67f2;
-    color: #fff;
-    text-decoration: none;
-    border-radius: 5px;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-    margin-top: 20px;
-    transition: background-color 0.2s;
-}
-
-.modal-content button:hover {
-    background-color: #4a54e6;
-}
-
-/* NYTT: Styling för navigeringsmenyn i headern */
-nav#main-nav {
-    padding-top: 10px;
-}
-
-nav#main-nav a {
-    color: #f0f0f0;
-    text-decoration: none;
-    margin: 0 15px;
-    font-weight: bold;
-    transition: color 0.2s;
-}
-
-nav#main-nav a:hover {
-    color: #5c67f2;
-}
-
-
-/* NYTT: Styling för vinnarlistan på startsidan (liknar den andra) */
-#homepage-winners-sidebar {
-    background-color: #2a2a2a;
-    padding: 15px;
-    border-radius: 8px;
-    height: fit-content;
-}
-
-#homepage-winners-sidebar h3 {
-    margin-top: 0;
-    border-bottom: 2px solid #5c67f2;
-    padding-bottom: 10px;
-}
-
-/* Media-fråga för mindre skärmar (oförändrad) */
-@media (max-width: 900px) {
-    .content-wrapper {
-        grid-template-columns: 1fr;
-    }
-}
+/* ------ CSS FÖR MODAL-FÖNSTER ------ */
+.modal { position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; }
+.modal-content { background-color: #333; padding: 20px; border-radius: 8px; width: 80%; max-width: 600px; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; }
+.close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
+#winner-results { margin-top: 20px; background-color: #2a2a2a; padding: 10px; border-radius: 5px; }
+#winner-results h4 { margin-top: 0; }
+#winner-results p { margin: 5px 0; border-bottom: 1px solid #444; padding-bottom: 5px; }

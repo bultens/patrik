@@ -145,7 +145,8 @@ document.addEventListener('DOMContentLoaded', function() {
             content_css: 'dark',
             height: 500,
             image_advtab: true,
-            paste_data_images: true
+            paste_data_images: true,
+	    onboarding: false
         });
     }
 
