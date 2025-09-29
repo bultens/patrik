@@ -1,15 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <style>
+        .page-card .header { display: flex; align-items: center; gap: 10px; }
+        .drag-handle { cursor: grab; font-size: 1.5em; color: #777; }
+        .drag-handle:active { cursor: grabbing; }
+    </style>
+</head>
 <body>
     <header><h1>Admin Panel</h1></header>
+
     <main class="admin-container">
+        <div id="login-view">
+            <h2>Log In</h2>
+            <form id="admin-login-form">
+                <label for="email">Email:</label><input type="email" id="email" required>
+                <label for="password">Password:</label><input type="password" id="password" required>
+                <button type="submit">Log In</button><p id="login-error" style="color: red;"></p>
+            </form>
+        </div>
+
         <div id="admin-view" class="hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>Welcome, Admin!</h2><button id="logout-button">Log Out</button>
+            </div>
             <div id="page-management">
                 <h3>Manage Main Pages</h3>
-                <p>Drag and drop pages to set the order. Use the button below to add a new page.</p>
+                <p>Drag and drop the pages to set the order. Use the button below to add a new page.</p>
                 <button id="add-new-page-btn" style="width: 100%; padding: 10px; margin-bottom: 20px;">+ Add New Page</button>
                 <div id="pages-list-container"><p id="loading-indicator">Loading pages...</p></div>
             </div>
         </div>
     </main>
+    
+    <div id="item-modal" class="modal hidden"> ... </div>
+    <div id="winner-modal" class="modal hidden"> ... </div>
+
     <footer><p>&copy; 2025 Free Game Giveaways - Admin</p></footer>
     <script type="module" src="admin.js"></script>
 </body>
