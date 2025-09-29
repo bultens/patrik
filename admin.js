@@ -62,25 +62,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function loadGiveawayPages() {
-        loadingIndicator.classList.remove('hidden');
-        pagesListContainer.innerHTML = '';
-        try {
-            const q = query(collection(db, "giveawayPages"), orderBy("order"));
-            const querySnapshot = await getDocs(q);
-            if (querySnapshot.empty) {
-                pagesListContainer.innerHTML = '<p>No pages found.</p>';
-            } else {
-                querySnapshot.forEach(doc => {
-                    const pageData = doc.data();
-                    const pageId = doc.id;
-                    const pageCard = document.createElement('div');
-                    pageCard.className = 'page-card';
-                    pageCard.setAttribute('data-id', pageId);
-                    pageCard.innerHTML = `
-                        <div class="header">
-                            <span class="drag-handle">⠿</span>
-                            <h4>Page: ${pageData.title}</h4>
-                        </div>
+    loadingIndicator.classList.remove('hidden');
+    pagesListContainer.innerHTML = '';
+    try {
+        const q = query(collection(db, "giveawayPages"), orderBy("order"));
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) { pagesListContainer.innerHTML = '<p>No pages found.</p>'; }
+        else {
+            querySnapshot.forEach(doc => {
+                const pageData = doc.data();
+                const pageId = doc.id;
+                const pageCard = document.createElement('div');
+                pageCard.className = 'page-card';
+                pageCard.setAttribute('data-id', pageId);
+                // NY, FÖRENKLAD HTML-STRUKTUR
+                pageCard.innerHTML = `
+                    <div class="header">
+                        <span class="drag-handle">⠿</span>
+                        <h4>Page: ${pageData.title}</h4>
+                    </div>
+                    <div class="settings-column">
                         <label for="pageType-${pageId}">Page Type:</label>
                         <select id="pageType-${pageId}" data-id="${pageId}" class="page-type-selector">
                             <option value="giveaway" ${pageData.pageType === 'giveaway' ? 'selected' : ''}>Giveaway</option>
@@ -88,67 +89,69 @@ document.addEventListener('DOMContentLoaded', function() {
                         </select>
                         <label for="title-${pageId}">Title:</label>
                         <input type="text" id="title-${pageId}" value="${pageData.title}">
-                        <label for="desc-${pageId}">Card Description (for main page):</label>
+                        <label for="desc-${pageId}">Card Description:</label>
                         <textarea id="desc-${pageId}" rows="3">${pageData.description || ''}</textarea>
                         <label for="image-${pageId}">Card Image URL:</label>
                         <input type="text" id="image-${pageId}" value="${pageData.image || ''}">
-                        <div class="guide-fields ${pageData.pageType !== 'guide' ? 'hidden' : ''}">
-                            <label for="content-${pageId}">Content:</label>
-                            <textarea id="content-${pageId}" class="tinymce-editor" rows="15">${pageData.content || ''}</textarea>
-                            <label for="background-${pageId}">Page Background (color or url):</label>
+                        <div class="guide-fields-settings ${pageData.pageType !== 'guide' ? 'hidden' : ''}">
+                           <label for="background-${pageId}">Page Background:</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <input type="text" id="background-${pageId}" value="${pageData.pageBackground || ''}">
                                 <input type="color" class="color-picker" data-target="background-${pageId}" value="${(pageData.pageBackground || '').startsWith('#') ? pageData.pageBackground : '#1a1a1a'}">
                             </div>
                         </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="isActive-${pageId}" ${pageData.isActive ? 'checked' : ''}>
+                            <label for="isActive-${pageId}">Active</label>
+                        </div>
+                        <button class="save-page-btn" data-id="${pageId}">Save Changes</button>
+                        <span id="feedback-${pageId}" style="margin-left: 10px; color: lightgreen;"></span>
+                    </div>
+                    <div class="content-column">
+                        <div class="guide-fields ${pageData.pageType !== 'guide' ? 'hidden' : ''}">
+                            <label for="content-${pageId}">Content:</label>
+                            <textarea id="content-${pageId}" class="tinymce-editor" rows="15">${pageData.content || ''}</textarea>
+                        </div>
                         <div class="giveaway-fields ${pageData.pageType !== 'giveaway' ? 'hidden' : ''}">
                             <div class="items-section">
-                                <h5>Giveaway Items on this page:</h5>
+                                <h5>Giveaway Items:</h5>
                                 <div class="items-list" id="items-list-${pageId}"></div>
                                 <button class="add-item-btn" data-page-id="${pageId}">+ Add New Item</button>
                             </div>
                         </div>
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="isActive-${pageId}" ${pageData.isActive ? 'checked' : ''}>
-                            <label for="isActive-${pageId}">Active (show on homepage)</label>
-                        </div>
-                        <button class="save-page-btn" data-id="${pageId}">Save Changes</button>
-                        <span id="feedback-${pageId}" style="margin-left: 10px; color: lightgreen;"></span>
-                    `;
-                    pagesListContainer.appendChild(pageCard);
-                    if (pageData.pageType === 'giveaway') {
-                        loadItemsForPage(pageId);
-                    }
-                });
-                initializeTinyMCE();
-                addPageTypeSelectorListeners();
-                addColorPickerListeners();
-                addSaveButtonListeners();
-                addAddItemButtonListeners();
-                initializeSortable();
-            }
-        } catch (error) {
-            console.error("Error fetching pages: ", error);
-            pagesListContainer.innerHTML = '<p style="color: red;">Could not load pages from database.</p>';
-        } finally {
-            loadingIndicator.classList.add('hidden');
+                    </div>
+                `;
+                pagesListContainer.appendChild(pageCard);
+                if (pageData.pageType === 'giveaway') {
+                    loadItemsForPage(pageId);
+                }
+            });
+            initializeTinyMCE();
+            addPageTypeSelectorListeners();
+            addColorPickerListeners();
+            addSaveButtonListeners();
+            addAddItemButtonListeners();
+            initializeSortable();
         }
-    }
+    } catch (error) { console.error("Error fetching pages: ", error); } 
+    finally { loadingIndicator.classList.add('hidden'); }
+}
 
-    function initializeTinyMCE() {
-        tinymce.remove('.tinymce-editor');
-        tinymce.init({
-            selector: '.tinymce-editor',
-            plugins: 'image link lists media autoresize code',
-            toolbar: 'undo redo | bold italic underline | blocks | alignleft aligncenter alignright | bullist numlist | link image media | code',
-            skin: 'oxide-dark',
-            content_css: 'dark',
-            height: 500,
-            image_advtab: true,
-            paste_data_images: true,
-	    onboarding: false
-        });
-    }
+function initializeTinyMCE() {
+    tinymce.remove('.tinymce-editor');
+    tinymce.init({
+        // NY, SMARTARE SELECTOR
+        selector: '.guide-fields:not(.hidden) .tinymce-editor',
+        plugins: 'image link lists media autoresize code',
+        toolbar: 'undo redo | bold italic underline | blocks | alignleft aligncenter alignright | bullist numlist | link image media | code',
+        skin: 'oxide-dark',
+        content_css: 'dark',
+        height: 600,
+        image_advtab: true,
+        paste_data_images: true,
+        onboarding: false,
+    });
+}
 
     function initializeSortable() {
         const el = document.getElementById('pages-list-container');
