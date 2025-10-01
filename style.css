@@ -87,26 +87,37 @@ nav#main-nav a:hover { color: #5c67f2; }
 @media (max-width: 900px) {
     .content-wrapper { grid-template-columns: 1fr; }
 }
-/* ------ CSS FÖR ADMIN-PANELEN ------ */
+
+/* ------ CSS FÖR ADMIN-PANELEN (FIX) ------ */
 .admin-container { 
     width: 100%; margin: 0; padding: 20px; box-sizing: border-box; 
 }
 .page-card {
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
     display: grid;
-    grid-template-columns: 350px 1fr;
-    gap: 10px 30px;
+    grid-template-columns: 350px 1fr; /* Fast bredd för vänster, resten för höger */
+    gap: 20px;
+    align-items: start; /* Justerar kolumnerna till toppen */
 }
-.page-card > .header, 
-.page-card > .settings-column .save-page-btn {
-    grid-column: 1 / -1;
+.page-card > .header {
+    grid-column: 1 / -1; /* Header sträcker sig över båda kolumnerna */
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
-.settings-column { grid-column: 1 / 2; }
-.content-column { grid-column: 2 / 3; }
+.settings-column {
+    grid-column: 1 / 2;
+}
+.content-column {
+    grid-column: 2 / 3;
+}
 .page-card label { display: block; margin-top: 15px; font-weight: bold; }
 .page-card input[type="text"], .page-card input[type="number"], .page-card textarea, .page-card select { width: 100%; padding: 8px; box-sizing: border-box; background-color: #333; color: #f0f0f0; border: 1px solid #555; border-radius: 4px; }
 .page-card .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 15px; }
 .page-card button { padding: 10px 15px; margin-top: 20px; background-color: #5c67f2; color: white; border: none; border-radius: 5px; cursor: pointer; }
-.page-card .header { display: flex; align-items: center; gap: 10px; }
 .drag-handle { cursor: grab; font-size: 1.5em; color: #777; }
 .items-section { border-top: 1px solid #444; margin-top: 20px; padding-top: 20px; }
 .item-listing { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; background-color: #333; padding: 10px; border-radius: 5px; margin-top: 10px; gap: 10px; }
@@ -117,14 +128,13 @@ nav#main-nav a:hover { color: #5c67f2; }
 .btn-draw { background-color: #17a2b8; }
 .btn-view-winners { background-color: #6f42c1; }
 
-/* ------ CSS FÖR MODAL-FÖNSTER (FIX) ------ */
-/* Gäller nu BÅDE .modal och .modal-overlay */
+/* ------ CSS FÖR MODAL-FÖNSTER ------ */
 .modal, .modal-overlay { 
     position: fixed; z-index: 1000; left: 0; top: 0; 
     width: 100%; height: 100%; 
     overflow: auto; 
     background-color: rgba(0,0,0,0.7); 
-    display: none; /* Ändrad till 'none' för att vara dold som standard */
+    display: none;
     justify-content: center; align-items: center; 
 }
 .modal-content { 
@@ -132,9 +142,8 @@ nav#main-nav a:hover { color: #5c67f2; }
     width: 80%; max-width: 600px; position: relative;
 }
 .modal-header { display: flex; justify-content: space-between; align-items: center; }
-.close-btn, .close-button { /* Gäller nu båda klassnamnen */
+.close-btn, .close-button {
     color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer;
 }
 #winner-results { margin-top: 20px; background-color: #2a2a2a; padding: 10px; border-radius: 5px; }
-#winner-results h4 { margin-top: 0; }
-#winner-results p { margin: 5px 0; border-bottom: 1px solid #444; padding-bottom: 5px; }
+#winner-
