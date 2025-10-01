@@ -45,121 +45,106 @@ document.addEventListener('DOMContentLoaded', function() {
     async function addNewPage() {
         try {
             const newPageRef = await addDoc(collection(db, "giveawayPages"), {
-                title: "New Blank Page",
-                pageType: "guide",
-                description: "A short description for the card on the main page.",
-                content: "# New Guide\n\nStart writing your content here.",
-                image: "https://via.placeholder.com/300x180.png?text=New+Page",
-                pageBackground: "#1a1a1a",
-                isActive: false,
-                order: 99
+                title: "New Blank Page", pageType: "guide", description: "A short description for the card on the main page.", content: "# New Guide\n\nStart writing your content here.", image: "https://via.placeholder.com/300x180.png?text=New+Page", pageBackground: "#1a1a1a", isActive: false, order: 99
             });
             await updateDoc(newPageRef, { pageId: newPageRef.id });
             loadGiveawayPages();
-        } catch (error) {
-            console.error("Error adding new page: ", error);
-        }
+        } catch (error) { console.error("Error adding new page: ", error); }
     }
 
     async function loadGiveawayPages() {
-    loadingIndicator.classList.remove('hidden');
-    pagesListContainer.innerHTML = '';
-    try {
-        const q = query(collection(db, "giveawayPages"), orderBy("order"));
-        const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) { pagesListContainer.innerHTML = '<p>No pages found.</p>'; }
-        else {
-            querySnapshot.forEach(doc => {
-                const pageData = doc.data();
-                const pageId = doc.id;
-                const pageCard = document.createElement('div');
-                pageCard.className = 'page-card';
-                pageCard.setAttribute('data-id', pageId);
-                // NY, FÖRENKLAD HTML-STRUKTUR
-                pageCard.innerHTML = `
-                    <div class="header">
-                        <span class="drag-handle">⠿</span>
-                        <h4>Page: ${pageData.title}</h4>
-                    </div>
-                    <div class="settings-column">
-                        <label for="pageType-${pageId}">Page Type:</label>
-                        <select id="pageType-${pageId}" data-id="${pageId}" class="page-type-selector">
-                            <option value="giveaway" ${pageData.pageType === 'giveaway' ? 'selected' : ''}>Giveaway</option>
-                            <option value="guide" ${pageData.pageType === 'guide' ? 'selected' : ''}>Guide</option>
-                        </select>
-                        <label for="title-${pageId}">Title:</label>
-                        <input type="text" id="title-${pageId}" value="${pageData.title}">
-                        <label for="desc-${pageId}">Card Description:</label>
-                        <textarea id="desc-${pageId}" rows="3">${pageData.description || ''}</textarea>
-                        <label for="image-${pageId}">Card Image URL:</label>
-                        <input type="text" id="image-${pageId}" value="${pageData.image || ''}">
-                        <div class="guide-fields-settings ${pageData.pageType !== 'guide' ? 'hidden' : ''}">
-                           <label for="background-${pageId}">Page Background:</label>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="text" id="background-${pageId}" value="${pageData.pageBackground || ''}">
-                                <input type="color" class="color-picker" data-target="background-${pageId}" value="${(pageData.pageBackground || '').startsWith('#') ? pageData.pageBackground : '#1a1a1a'}">
+        loadingIndicator.classList.remove('hidden');
+        pagesListContainer.innerHTML = '';
+        try {
+            const q = query(collection(db, "giveawayPages"), orderBy("order"));
+            const querySnapshot = await getDocs(q);
+            if (querySnapshot.empty) { pagesListContainer.innerHTML = '<p>No pages found.</p>'; }
+            else {
+                querySnapshot.forEach(doc => {
+                    const pageData = doc.data();
+                    const pageId = doc.id;
+                    const pageCard = document.createElement('div');
+                    pageCard.className = 'page-card';
+                    pageCard.setAttribute('data-id', pageId);
+                    pageCard.innerHTML = `
+                        <div class="header">
+                            <span class="drag-handle">⠿</span>
+                            <h4>Page: ${pageData.title}</h4>
+                        </div>
+                        <div class="settings-column">
+                            <label for="pageType-${pageId}">Page Type:</label>
+                            <select id="pageType-${pageId}" data-id="${pageId}" class="page-type-selector">
+                                <option value="giveaway" ${pageData.pageType === 'giveaway' ? 'selected' : ''}>Giveaway</option>
+                                <option value="guide" ${pageData.pageType === 'guide' ? 'selected' : ''}>Guide</option>
+                            </select>
+                            <label for="title-${pageId}">Title:</label>
+                            <input type="text" id="title-${pageId}" value="${pageData.title}">
+                            <label for="desc-${pageId}">Card Description:</label>
+                            <textarea id="desc-${pageId}" rows="3">${pageData.description || ''}</textarea>
+                            <label for="image-${pageId}">Card Image URL:</label>
+                            <input type="text" id="image-${pageId}" value="${pageData.image || ''}">
+                            <div class="guide-fields-settings ${pageData.pageType !== 'guide' ? 'hidden' : ''}">
+                               <label for="background-${pageId}">Page Background:</label>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="text" id="background-${pageId}" value="${pageData.pageBackground || ''}">
+                                    <input type="color" class="color-picker" data-target="background-${pageId}" value="${(pageData.pageBackground || '').startsWith('#') ? pageData.pageBackground : '#1a1a1a'}">
+                                </div>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="isActive-${pageId}" ${pageData.isActive ? 'checked' : ''}>
+                                <label for="isActive-${pageId}">Active</label>
+                            </div>
+                            <button class="save-page-btn" data-id="${pageId}">Save Changes</button>
+                            <span id="feedback-${pageId}" style="margin-left: 10px; color: lightgreen;"></span>
+                        </div>
+                        <div class="content-column">
+                            <div class="guide-fields ${pageData.pageType !== 'guide' ? 'hidden' : ''}">
+                                <label for="content-${pageId}">Content:</label>
+                                <textarea id="content-${pageId}" class="tinymce-editor" rows="15">${pageData.content || ''}</textarea>
+                            </div>
+                            <div class="giveaway-fields ${pageData.pageType !== 'giveaway' ? 'hidden' : ''}">
+                                <div class="items-section">
+                                    <h5>Giveaway Items:</h5>
+                                    <div class="items-list" id="items-list-${pageId}"></div>
+                                    <button class="add-item-btn" data-page-id="${pageId}">+ Add New Item</button>
+                                </div>
                             </div>
                         </div>
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="isActive-${pageId}" ${pageData.isActive ? 'checked' : ''}>
-                            <label for="isActive-${pageId}">Active</label>
-                        </div>
-                        <button class="save-page-btn" data-id="${pageId}">Save Changes</button>
-                        <span id="feedback-${pageId}" style="margin-left: 10px; color: lightgreen;"></span>
-                    </div>
-                    <div class="content-column">
-                        <div class="guide-fields ${pageData.pageType !== 'guide' ? 'hidden' : ''}">
-                            <label for="content-${pageId}">Content:</label>
-                            <textarea id="content-${pageId}" class="tinymce-editor" rows="15">${pageData.content || ''}</textarea>
-                        </div>
-                        <div class="giveaway-fields ${pageData.pageType !== 'giveaway' ? 'hidden' : ''}">
-                            <div class="items-section">
-                                <h5>Giveaway Items:</h5>
-                                <div class="items-list" id="items-list-${pageId}"></div>
-                                <button class="add-item-btn" data-page-id="${pageId}">+ Add New Item</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                pagesListContainer.appendChild(pageCard);
-                if (pageData.pageType === 'giveaway') {
-                    loadItemsForPage(pageId);
-                }
-            });
-            initializeTinyMCE();
-            addPageTypeSelectorListeners();
-            addColorPickerListeners();
-            addSaveButtonListeners();
-            addAddItemButtonListeners();
-            initializeSortable();
-        }
-    } catch (error) { console.error("Error fetching pages: ", error); } 
-    finally { loadingIndicator.classList.add('hidden'); }
-}
+                    `;
+                    pagesListContainer.appendChild(pageCard);
+                    if (pageData.pageType === 'giveaway') {
+                        loadItemsForPage(pageId);
+                    }
+                });
+                initializeTinyMCE();
+                addPageTypeSelectorListeners();
+                addColorPickerListeners();
+                addSaveButtonListeners();
+                addAddItemButtonListeners();
+                initializeSortable();
+            }
+        } catch (error) { console.error("Error fetching pages: ", error); } 
+        finally { loadingIndicator.classList.add('hidden'); }
+    }
 
-function initializeTinyMCE() {
-    tinymce.remove('.tinymce-editor');
-    tinymce.init({
-        // NY, SMARTARE SELECTOR
-        selector: '.guide-fields:not(.hidden) .tinymce-editor',
-        plugins: 'image link lists media autoresize code',
-        toolbar: 'undo redo | bold italic underline | blocks | alignleft aligncenter alignright | bullist numlist | link image media | code',
-        skin: 'oxide-dark',
-        content_css: 'dark',
-        height: 600,
-        image_advtab: true,
-        paste_data_images: true,
-        onboarding: false,
-    });
-}
+    function initializeTinyMCE() {
+        tinymce.remove('.tinymce-editor');
+        tinymce.init({
+            selector: '.guide-fields:not(.hidden) .tinymce-editor',
+            plugins: 'image link lists media autoresize code',
+            toolbar: 'undo redo | bold italic underline | blocks | alignleft aligncenter alignright | bullist numlist | link image media | code',
+            skin: 'oxide-dark',
+            content_css: 'dark',
+            height: 600,
+            image_advtab: true,
+            paste_data_images: true,
+            onboarding: false,
+        });
+    }
 
     function initializeSortable() {
         const el = document.getElementById('pages-list-container');
-        new Sortable(el, {
-            handle: '.drag-handle',
-            animation: 150,
-            onEnd: saveNewOrder
-        });
+        new Sortable(el, { handle: '.drag-handle', animation: 150, onEnd: saveNewOrder });
     }
 
     async function saveNewOrder() {
@@ -172,12 +157,8 @@ function initializeTinyMCE() {
                 batch.update(docRef, { order: index });
             }
         });
-        try {
-            await batch.commit();
-            console.log("New order saved!");
-        } catch (error) {
-            console.error("Could not save new order: ", error);
-        }
+        try { await batch.commit(); console.log("New order saved!"); } 
+        catch (error) { console.error("Could not save new order: ", error); }
     }
 
     function addPageTypeSelectorListeners() {
@@ -186,11 +167,15 @@ function initializeTinyMCE() {
                 const pageCard = e.target.closest('.page-card');
                 const guideFields = pageCard.querySelector('.guide-fields');
                 const giveawayFields = pageCard.querySelector('.giveaway-fields');
+                const guideFieldsSettings = pageCard.querySelector('.guide-fields-settings');
+                
                 if (e.target.value === 'guide') {
                     guideFields.classList.remove('hidden');
+                    guideFieldsSettings.classList.remove('hidden');
                     giveawayFields.classList.add('hidden');
                 } else {
                     guideFields.classList.add('hidden');
+                    guideFieldsSettings.classList.add('hidden');
                     giveawayFields.classList.remove('hidden');
                 }
             });
@@ -227,16 +212,9 @@ function initializeTinyMCE() {
                     dataToSave.pageBackground = document.getElementById(`background-${pageId}`).value;
                 }
                 const pageRef = doc(db, "giveawayPages", pageId);
-                try {
-                    await updateDoc(pageRef, dataToSave);
-                    feedbackSpan.textContent = 'Saved!';
-                } catch (error) {
-                    feedbackSpan.textContent = 'Error saving.';
-                    feedbackSpan.style.color = 'red';
-                }
-                setTimeout(() => {
-                    feedbackSpan.textContent = '';
-                }, 3000);
+                try { await updateDoc(pageRef, dataToSave); feedbackSpan.textContent = 'Saved!'; } 
+                catch (error) { feedbackSpan.textContent = 'Error saving.'; }
+                setTimeout(() => { feedbackSpan.textContent = ''; }, 3000);
             });
         });
     }
@@ -249,9 +227,8 @@ function initializeTinyMCE() {
         try {
             const querySnapshot = await getDocs(q);
             itemsListContainer.innerHTML = '';
-            if (querySnapshot.empty) {
-                itemsListContainer.innerHTML = '<p>No items have been added.</p>';
-            } else {
+            if (querySnapshot.empty) { itemsListContainer.innerHTML = '<p>No items have been added.</p>'; } 
+            else {
                 querySnapshot.forEach(itemDoc => {
                     const itemData = itemDoc.data();
                     const itemDiv = document.createElement('div');
@@ -259,15 +236,12 @@ function initializeTinyMCE() {
                     let buttonsHTML = itemData.status === 'closed' ?
                         `<button class="btn-view-winners" data-item-id="${itemDoc.id}" data-item-title="${itemData.title}">View Winners</button><button class="btn-delete" data-item-id="${itemDoc.id}" data-page-id="${pageId}">Delete (Archive)</button>` :
                         `<button class="btn-draw" data-item-id="${itemDoc.id}" data-item-title="${itemData.title}">Draw Winners</button><button class="btn-edit" data-item-id="${itemDoc.id}" data-page-id="${pageId}">Edit</button><button class="btn-delete" data-item-id="${itemDoc.id}" data-page-id="${pageId}">Delete</button>`;
-                    itemDiv.innerHTML = `<span>${itemData.title}</span><div>${buttonsHTML}</div>`;
+                    itemDiv.innerHTML = `<span>${itemData.title}</span><div class="item-buttons">${buttonsHTML}</div>`;
                     itemsListContainer.appendChild(itemDiv);
                 });
             }
             addEventListenersForItemButtons(pageId);
-        } catch (error) {
-            console.error("Error fetching items: ", error);
-            itemsListContainer.innerHTML = 'Could not load items.';
-        }
+        } catch (error) { console.error("Error fetching items: ", error); itemsListContainer.innerHTML = 'Could not load items.'; }
     }
 
     function addAddItemButtonListeners() {
@@ -294,17 +268,7 @@ function initializeTinyMCE() {
                 const docRef = doc(db, "giveawayItems", itemId);
                 const docSnap = await getDoc(docRef);
                 const itemData = docSnap.data();
-                modalTitle.textContent = "Edit Item";
-                itemForm.reset();
-                document.getElementById('modal-page-id').value = pageId;
-                document.getElementById('modal-item-id').value = itemId;
-                document.getElementById('item-title').value = itemData.title;
-                document.getElementById('item-description').value = itemData.description;
-                document.getElementById('item-image').value = itemData.imageURL || '';
-                document.getElementById('item-modalText').value = itemData.modalText;
-                document.getElementById('item-startTime').value = itemData.startTime.toDate().toISOString().slice(0, 16);
-                document.getElementById('item-endTime').value = itemData.endTime.toDate().toISOString().slice(0, 16);
-                itemModal.style.display = 'flex';
+                modalTitle.textContent = "Edit Item"; itemForm.reset(); document.getElementById('modal-page-id').value = pageId; document.getElementById('modal-item-id').value = itemId; document.getElementById('item-title').value = itemData.title; document.getElementById('item-description').value = itemData.description; document.getElementById('item-image').value = itemData.imageURL || ''; document.getElementById('item-modalText').value = itemData.modalText; document.getElementById('item-startTime').value = itemData.startTime.toDate().toISOString().slice(0, 16); document.getElementById('item-endTime').value = itemData.endTime.toDate().toISOString().slice(0, 16); itemModal.style.display = 'flex';
             } else if (target.classList.contains('btn-delete')) {
                 const docRef = doc(db, "giveawayItems", itemId);
                 const docSnap = await getDoc(docRef);
@@ -313,10 +277,7 @@ function initializeTinyMCE() {
                         const winnersQuery = query(collection(db, "winners"), where("itemId", "==", itemId));
                         const winnersSnapshot = await getDocs(winnersQuery);
                         const winnersData = winnersSnapshot.docs.map(d => d.data());
-                        await addDoc(collection(db, "archivedGiveaways"), { ...docSnap.data(),
-                            archivedAt: Timestamp.now(),
-                            winners: winnersData
-                        });
+                        await addDoc(collection(db, "archivedGiveaways"), { ...docSnap.data(), archivedAt: Timestamp.now(), winners: winnersData });
                         await deleteDoc(docRef);
                         alert('Item and winners have been archived and deleted.');
                         loadItemsForPage(pageId);
@@ -349,20 +310,9 @@ function initializeTinyMCE() {
         e.preventDefault();
         const pageId = document.getElementById('modal-page-id').value;
         const itemId = document.getElementById('modal-item-id').value;
-        const data = {
-            pageId: pageId,
-            title: document.getElementById('item-title').value,
-            description: document.getElementById('item-description').value,
-            imageURL: document.getElementById('item-image').value,
-            modalText: document.getElementById('item-modalText').value,
-            startTime: Timestamp.fromDate(new Date(document.getElementById('item-startTime').value)),
-            endTime: Timestamp.fromDate(new Date(document.getElementById('item-endTime').value))
-        };
-        if (itemId) {
-            await updateDoc(doc(db, "giveawayItems", itemId), data);
-        } else {
-            await addDoc(collection(db, "giveawayItems"), data);
-        }
+        const data = { pageId: pageId, title: document.getElementById('item-title').value, description: document.getElementById('item-description').value, imageURL: document.getElementById('item-image').value, modalText: document.getElementById('item-modalText').value, startTime: Timestamp.fromDate(new Date(document.getElementById('item-startTime').value)), endTime: Timestamp.fromDate(new Date(document.getElementById('item-endTime').value)) };
+        if (itemId) { await updateDoc(doc(db, "giveawayItems", itemId), data); } 
+        else { await addDoc(collection(db, "giveawayItems"), data); }
         itemModal.style.display = 'none';
         loadItemsForPage(pageId);
     }
@@ -389,10 +339,7 @@ function initializeTinyMCE() {
         const submissionsRef = collection(db, "giveawayItems", itemId, "submissions");
         const snapshot = await getDocs(submissionsRef);
         const participants = snapshot.docs.map(doc => doc.data().username);
-        if (participants.length === 0) {
-            winnerFeedback.textContent = 'No participants!';
-            return;
-        }
+        if (participants.length === 0) { winnerFeedback.textContent = 'No participants!'; return; }
         winnerFeedback.textContent = `${participants.length} participants found. Drawing...`;
         const shuffled = participants.sort(() => 0.5 - Math.random());
         drawnWinners = shuffled.slice(0, winnerCount);
@@ -413,26 +360,16 @@ function initializeTinyMCE() {
     async function saveWinners() {
         const itemId = document.getElementById('winner-modal-item-id').value;
         const itemTitle = winnerModalTitle.textContent.replace('Draw winners for: ', '');
-        if (drawnWinners.length === 0) {
-            alert('No winners to save.');
-            return;
-        }
+        if (drawnWinners.length === 0) { alert('No winners to save.'); return; }
         winnerFeedback.textContent = 'Saving...';
         try {
             const batch = writeBatch(db);
             drawnWinners.forEach(winnerUsername => {
                 const winnerRef = doc(collection(db, "winners"));
-                batch.set(winnerRef, {
-                    itemId: itemId,
-                    itemTitle: itemTitle,
-                    username: winnerUsername,
-                    drawnAt: Timestamp.now()
-                });
+                batch.set(winnerRef, { itemId: itemId, itemTitle: itemTitle, username: winnerUsername, drawnAt: Timestamp.now() });
             });
             const itemRef = doc(db, "giveawayItems", itemId);
-            batch.update(itemRef, {
-                status: "closed"
-            });
+            batch.update(itemRef, { status: "closed" });
             await batch.commit();
             winnerFeedback.textContent = 'Winners have been saved!';
             setTimeout(() => {
