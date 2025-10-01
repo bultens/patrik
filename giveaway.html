@@ -10,25 +10,20 @@
 
     <header>
         <h1>Free Game Giveaways</h1>
-        <nav id="main-nav">
-            </nav>
+        <nav id="main-nav"></nav>
     </header>
 
     <div class="content-wrapper">
-        <main id="giveaway-item-container" class="giveaway-page-main">
-            </main>
-
+        <main id="giveaway-item-container" class="giveaway-page-main"></main>
         <aside id="winners-sidebar">
             <h3>Winners on this Page</h3>
-            <div id="winners-list-container">
-                <p>Loading winners...</p>
-            </div>
+            <div id="winners-list-container"></div>
         </aside>
     </div>
 
     <div id="signup-modal" class="modal-overlay">
         <div class="modal-content">
-            <span class="close-button">&times;</span>
+            <span class="close-btn">&times;</span>
             <h2 id="modal-giveaway-title">Sign Up for Giveaway</h2>
             <p id="modal-giveaway-text">Enter your in-game username to participate.</p>
             <form id="signup-form">
@@ -45,6 +40,7 @@
     </footer>
 
     <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="shared.js"></script>
     <script type="module" src="giveaway-script.js"></script>
     
 </body>
