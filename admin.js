@@ -1,6 +1,7 @@
-import { auth, db } from './firebase-config.js';
+import { auth, db, storage } from './firebase-config.js'; // Lade till 'storage'
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { collection, getDocs, doc, updateDoc, query, where, addDoc, deleteDoc, Timestamp, writeBatch, getDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { ref, uploadBytesResumable, getDownloadURL, listAll, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 document.addEventListener('DOMContentLoaded', function() {
 
@@ -28,7 +29,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const drawWinnersBtn = document.getElementById('draw-winners-btn');
     const saveWinnersBtn = document.getElementById('save-winners-btn');
     const winnerFeedback = document.getElementById('winner-feedback');
+    // File Manager Modal
+    const fileManagerModal = document.getElementById('file-manager-modal');
+    const closeFileManagerModalBtn = document.getElementById('close-file-manager-modal');
+    const imageUploadInput = document.getElementById('image-upload-input');
+    const uploadBtn = document.getElementById('upload-btn');
+    const uploadProgress = document.getElementById('upload-progress');
+    const fileManagerGrid = document.getElementById('file-manager-grid');
+
+    // --- State Variables ---
     let drawnWinners = [];
+    let currentTargetInputId = null; // Spårar vilket input-fält som ska fyllas med bild-URL
 
     // --- EVENT LISTENERS ---
     loginForm.addEventListener('submit', (e) => { e.preventDefault(); const email = loginForm['email'].value; const password = loginForm['password'].value; signInWithEmailAndPassword(auth, email, password).then(() => { loginError.textContent = ''; }).catch(() => { loginError.textContent = 'Incorrect email or password.'; }); });
@@ -40,6 +51,18 @@ document.addEventListener('DOMContentLoaded', function() {
     drawWinnersBtn.addEventListener('click', drawWinners);
     saveWinnersBtn.addEventListener('click', saveWinners);
     itemForm.addEventListener('submit', handleItemFormSubmit);
+    // File Manager
+    closeFileManagerModalBtn.addEventListener('click', () => fileManagerModal.style.display = 'none');
+    uploadBtn.addEventListener('click', handleImageUpload);
+    fileManagerGrid.addEventListener('click', handleFileManagerGridClick);
+    document.body.addEventListener('click', (e) => {
+        if (e.target.classList.contains('browse-storage-btn')) {
+            currentTargetInputId = e.target.dataset.target;
+            fileManagerModal.style.display = 'flex';
+            loadImageLibrary();
+        }
+    });
+
 
     // --- PAGE MANAGEMENT ---
     async function addNewPage() {
@@ -82,13 +105,17 @@ document.addEventListener('DOMContentLoaded', function() {
                             <label for="desc-${pageId}">Card Description:</label>
                             <textarea id="desc-${pageId}" rows="3">${pageData.description || ''}</textarea>
                             <label for="image-${pageId}">Card Image URL:</label>
-                            <input type="text" id="image-${pageId}" value="${pageData.image || ''}">
+                             <div class="input-with-button">
+                                <input type="text" id="image-${pageId}" value="${pageData.image || ''}">
+                                <button type="button" class="browse-storage-btn" data-target="image-${pageId}">Browse</button>
+                            </div>
                             <div class="guide-fields-settings ${pageData.pageType !== 'guide' ? 'hidden' : ''}">
-                               <label for="background-${pageId}">Page Background:</label>
-                                <div style="display: flex; align-items: center; gap: 10px;">
+                               <label for="background-${pageId}">Page Background (Color or Image URL):</label>
+                               <div class="input-with-button">
                                     <input type="text" id="background-${pageId}" value="${pageData.pageBackground || ''}">
-                                    <input type="color" class="color-picker" data-target="background-${pageId}" value="${(pageData.pageBackground || '').startsWith('#') ? pageData.pageBackground : '#1a1a1a'}">
-                                </div>
+                                    <button type="button" class="browse-storage-btn" data-target="background-${pageId}">Browse</button>
+                               </div>
+                               <input type="color" class="color-picker" data-target="background-${pageId}" value="${(pageData.pageBackground || '').startsWith('#') ? pageData.pageBackground : '#1a1a1a'}" style="width: 100%; margin-top: 5px;">
                             </div>
                             <div class="checkbox-group">
                                 <input type="checkbox" id="isActive-${pageId}" ${pageData.isActive ? 'checked' : ''}>
@@ -380,6 +407,93 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error("Error saving winners: ", error);
             winnerFeedback.textContent = 'An error occurred while saving.';
             winnerFeedback.style.color = 'red';
+        }
+    }
+
+    // --- FILE MANAGER ---
+    async function loadImageLibrary() {
+        fileManagerGrid.innerHTML = '<p>Loading images...</p>';
+        const listRef = ref(storage, 'images/');
+        try {
+            const res = await listAll(listRef);
+            fileManagerGrid.innerHTML = '';
+            if (res.items.length === 0) {
+                fileManagerGrid.innerHTML = '<p>No images in library. Upload one!</p>';
+                return;
+            }
+            for (const itemRef of res.items) {
+                const url = await getDownloadURL(itemRef);
+                const imageContainer = document.createElement('div');
+                imageContainer.className = 'fm-image-container';
+                imageContainer.innerHTML = `
+                    <img src="${url}" alt="Library image">
+                    <div class="fm-image-overlay">
+                        <button class="btn-select-img" data-url="${url}">Select</button>
+                        <button class="btn-delete btn-delete-img" data-path="${itemRef.fullPath}">Delete</button>
+                    </div>
+                `;
+                fileManagerGrid.appendChild(imageContainer);
+            }
+        } catch (error) {
+            console.error("Error loading image library:", error);
+            fileManagerGrid.innerHTML = '<p style="color:red;">Could not load image library.</p>';
+        }
+    }
+
+    function handleImageUpload() {
+        const file = imageUploadInput.files[0];
+        if (!file) { alert('Please select a file to upload.'); return; }
+
+        const storageRef = ref(storage, 'images/' + new Date().getTime() + '-' + file.name);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        uploadTask.on('state_changed', 
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                uploadProgress.value = progress;
+            }, 
+            (error) => {
+                console.error("Upload failed:", error);
+                alert('Upload failed. See console for details.');
+            }, 
+            () => {
+                getDownloadURL(uploadTask.snapshot.ref).then(() => {
+                    alert('Upload complete!');
+                    uploadProgress.value = 0;
+                    imageUploadInput.value = ''; // Rensa filinput
+                    loadImageLibrary(); // Ladda om biblioteket för att visa den nya bilden
+                });
+            }
+        );
+    }
+    
+    async function handleFileManagerGridClick(e) {
+        const target = e.target;
+
+        if (target.classList.contains('btn-select-img')) {
+            const url = target.dataset.url;
+            if (currentTargetInputId && document.getElementById(currentTargetInputId)) {
+                document.getElementById(currentTargetInputId).value = url;
+                // Om det är en färgväljare kopplad, uppdatera den också
+                const colorPicker = document.querySelector(`.color-picker[data-target="${currentTargetInputId}"]`);
+                if(colorPicker) colorPicker.value = '#000000'; // Nollställ färgen
+            }
+            fileManagerModal.style.display = 'none';
+        }
+
+        if (target.classList.contains('btn-delete-img')) {
+            const imagePath = target.dataset.path;
+            if (confirm('Are you sure you want to permanently delete this image?')) {
+                const imageRef = ref(storage, imagePath);
+                try {
+                    await deleteObject(imageRef);
+                    alert('Image deleted.');
+                    loadImageLibrary(); // Ladda om biblioteket
+                } catch (error) {
+                    console.error("Error deleting image:", error);
+                    alert('Could not delete image. See console for details.');
+                }
+            }
         }
     }
 

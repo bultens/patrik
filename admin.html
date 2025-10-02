@@ -7,51 +7,6 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="https://cdn.tiny.cloud/1/vl9rxng4niu3hsdxucdbidtqsn4t41w2hmdtam6nbb3cfnii/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
-    <style>
-        /* ÄNDRING: Justerar admin-containern till full bredd */
-        .admin-container { 
-            width: 100%; 
-            margin: 0; 
-            padding: 20px; 
-            box-sizing: border-box; /* Viktigt för att padding inte ska skapa scrollbar */
-        }
-        .hidden { display: none; }
-        
-        .page-card {
-            background-color: #2a2a2a; border-radius: 8px; padding: 20px; margin-top: 20px;
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 10px 30px;
-        }
-        .page-card > .header, 
-        .page-card > .settings-column .save-page-btn {
-            grid-column: 1 / -1;
-        }
-        .settings-column {
-            grid-column: 1 / 2;
-        }
-        .content-column {
-            grid-column: 2 / 3;
-        }
-        
-        .page-card label { display: block; margin-top: 15px; font-weight: bold; }
-        .page-card input[type="text"], .page-card input[type="number"], .page-card textarea, .page-card select { width: 100%; padding: 8px; box-sizing: border-box; background-color: #333; color: #f0f0f0; border: 1px solid #555; border-radius: 4px; }
-        .page-card .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 15px; }
-        .page-card button { padding: 10px 15px; margin-top: 20px; background-color: #5c67f2; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        .page-card .header { display: flex; align-items: center; gap: 10px; }
-        .drag-handle { cursor: grab; font-size: 1.5em; color: #777; }
-        .items-section { border-top: 1px solid #444; margin-top: 20px; padding-top: 20px; }
-        .item-listing { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; background-color: #333; padding: 10px; border-radius: 5px; margin-top: 10px; gap: 10px; }
-        .item-listing button { margin-top: 0; padding: 5px 10px; font-size: 0.9em; }
-        .btn-edit { background-color: #ffc107; color: black; }
-        .btn-delete { background-color: #dc3545; }
-        .btn-draw { background-color: #17a2b8; }
-        .btn-view-winners { background-color: #6f42c1; }
-        .modal { position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; display: none; justify-content: center; align-items: center; }
-        .modal-content { background-color: #333; padding: 20px; border-radius: 8px; width: 80%; max-width: 600px; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; }
-        .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
-    </style>
 </head>
 <body>
     <header><h1>Admin Panel</h1></header>
@@ -83,7 +38,11 @@
                 <input type="hidden" id="modal-page-id"><input type="hidden" id="modal-item-id">
                 <label for="item-title">Title:</label><input type="text" id="item-title" required>
                 <label for="item-description">Description:</label><textarea id="item-description" rows="3"></textarea>
-                <label for="item-image">Image (URL or filename):</label><input type="text" id="item-image">
+                <label for="item-image">Image URL:</label>
+                <div class="input-with-button">
+                    <input type="text" id="item-image">
+                    <button type="button" class="browse-storage-btn" data-target="item-image">Browse</button>
+                </div>
                 <label for="item-modalText">Text in sign-up modal:</label><textarea id="item-modalText" rows="3"></textarea>
                 <label for="item-startTime">Start time:</label><input type="datetime-local" id="item-startTime" required>
                 <label for="item-endTime">End time:</label><input type="datetime-local" id="item-endTime" required>
@@ -109,6 +68,28 @@
             <p id="winner-feedback"></p>
         </div>
     </div>
+
+    <div id="file-manager-modal" class="modal">
+        <div class="modal-content file-manager-content">
+            <div class="modal-header">
+                <h3>File Manager</h3>
+                <span class="close-btn" id="close-file-manager-modal">&times;</span>
+            </div>
+            <div class="file-manager-body">
+                <div class="upload-section">
+                    <h4>Upload New Image</h4>
+                    <input type="file" id="image-upload-input" accept="image/*">
+                    <button id="upload-btn">Upload</button>
+                    <progress id="upload-progress" value="0" max="100" style="width: 100%; margin-top: 10px;"></progress>
+                </div>
+                <div class="image-library">
+                    <h4>Image Library</h4>
+                    <div id="file-manager-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <footer><p>&copy; 2025 Free Game Giveaways - Admin</p></footer>
     <script type="module" src="admin.js"></script>
 </body>
