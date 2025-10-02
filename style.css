@@ -66,3 +66,4 @@ nav#main-nav a:hover { color: #5c67f2; }
 .fm-image-overlay button { padding: 3px 6px; font-size: 0.8em; margin-top: 0; }
 .input-with-button { display: flex; gap: 5px; }
 .browse-storage-btn { margin-top: 0 !important; flex-shrink: 0; }
+.hidden { display: none; }
